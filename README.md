@@ -1,4 +1,4 @@
-﻿# Groundwork: incident triage, three ways, with an eval harness
+# Groundwork: incident triage, three ways, with an eval harness
 
 An incident-triage system built three times over the same data - a model on
 its own, retrieval over runbooks, and an agent looping over MCP tools - and a
@@ -379,25 +379,30 @@ directly in the misdirection column, which is the most expensive one.
 
 ## Architecture
 
-```
-                    ┌─────────────────────────────┐
-   incident ───────▶│  (a) baseline               │──▶ verdict
-                    │      ticket only            │
-                    ├─────────────────────────────┤
-   incident ───────▶│  (b) rag                    │──▶ verdict
-                    │      + BM25 runbook chunks  │
-                    ├─────────────────────────────┤
-                    │  (c) agent                  │
-   incident ───────▶│      ReAct loop ◀──┐        │──▶ verdict
-                    └────────────────────┼────────┘
-                                         │ stdio (MCP)
-                              ┌──────────▼───────────┐
-                              │  triage MCP server   │
-                              │  search_runbooks     │
-                              │  get_ticket          │
-                              │  get_metrics         │
-                              │  find_similar_incidents │
-                              └──────────────────────┘
+```mermaid
+flowchart LR
+    INC(["incident"])
+    MCP["<b>triage MCP server</b><br/>search_runbooks<br/>get_ticket<br/>get_metrics<br/>find_similar_incidents"]
+    VA(["verdict"])
+    VB(["verdict"])
+    VC(["verdict"])
+
+    subgraph arms ["three configurations &mdash; same model, same prompt"]
+        direction TB
+        A["<b>(a) baseline</b><br/>ticket only"]
+        B["<b>(b) rag</b><br/>ticket + BM25 runbook chunks"]
+        C["<b>(c) agent</b><br/>ticket + ReAct loop"]
+    end
+
+    INC --> A
+    INC --> B
+    INC --> C
+
+    A --> VA
+    B --> VB
+    C --> VC
+
+    C <-->|stdio| MCP
 ```
 
 All three arms share one system prompt, one closed answer set of 14 root

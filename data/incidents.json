@@ -1,0 +1,1295 @@
+[
+  {
+    "id": "INC-001",
+    "service": "auth-gateway",
+    "severity": "SEV1",
+    "opened_at": "2026-03-02T08:00:00Z",
+    "title": "All API clients failing TLS handshake",
+    "description": "Every client integration started failing at once. Client-side logs show 'x509: certificate has expired or is not yet valid'. Our own CPU and database dashboards look completely normal.",
+    "timeline": [
+      {
+        "at": "2026-02-28T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed auth-gateway to production (most recent release)"
+      },
+      {
+        "at": "2026-03-02T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on auth-gateway: threshold breach"
+      },
+      {
+        "at": "2026-03-02T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-02T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "auth-gateway",
+      "start": "2026-03-02T06:00:00Z",
+      "end": "2026-03-02T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "expired_tls_certificate",
+      "root_cause_statement": "TLS handshakes fail because the leaf certificate passed its notAfter date.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-002",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-002",
+    "service": "media-transcode",
+    "severity": "SEV2",
+    "opened_at": "2026-03-02T12:00:00Z",
+    "title": "Transcode jobs failing to write output",
+    "description": "Transcode workers are erroring with 'ENOSPC: No space left on device' when writing finished renditions. Jobs that only read input succeed.",
+    "timeline": [
+      {
+        "at": "2026-02-27T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed media-transcode to production (most recent release)"
+      },
+      {
+        "at": "2026-03-02T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on media-transcode: threshold breach"
+      },
+      {
+        "at": "2026-03-02T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-02T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "media-transcode",
+      "start": "2026-03-02T10:00:00Z",
+      "end": "2026-03-02T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "disk_full",
+      "root_cause_statement": "A volume reached capacity and writes fail with ENOSPC.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-008",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-003",
+    "service": "search-indexer",
+    "severity": "SEV2",
+    "opened_at": "2026-03-02T16:00:00Z",
+    "title": "Indexer pods restarting every 40 minutes",
+    "description": "Pods are being terminated with reason OOMKilled and exit code 137, roughly every 40 minutes. Memory climbs steadily from start to kill. Request volume has been flat all week.",
+    "timeline": [
+      {
+        "at": "2026-02-26T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed search-indexer to production (most recent release)"
+      },
+      {
+        "at": "2026-03-02T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on search-indexer: threshold breach"
+      },
+      {
+        "at": "2026-03-02T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-02T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "search-indexer",
+      "start": "2026-03-02T14:00:00Z",
+      "end": "2026-03-02T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "memory_leak_oom",
+      "root_cause_statement": "Memory grows without bound until the orchestrator kills the process; the cycle repeats.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-004",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-004",
+    "service": "checkout-api",
+    "severity": "SEV1",
+    "opened_at": "2026-03-03T08:00:00Z",
+    "title": "Checkout error rate stepped up after release v2.8.1",
+    "description": "Error rate jumped from 0.4% to 19% in a single scrape interval, exactly matching the 14:05 deploy of v2.8.1. Traffic, memory and database metrics are unchanged.",
+    "timeline": [
+      {
+        "at": "2026-03-03T07:55:00Z",
+        "source": "deploy",
+        "text": "Deployed checkout-api v2.8.1 to production"
+      },
+      {
+        "at": "2026-03-03T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on checkout-api: threshold breach"
+      },
+      {
+        "at": "2026-03-03T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-03T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "checkout-api",
+      "start": "2026-03-03T06:00:00Z",
+      "end": "2026-03-03T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "bad_deploy_regression",
+      "root_cause_statement": "A release introduced a defect; failures start at the deploy timestamp.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-005",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-005",
+    "service": "payments-worker",
+    "severity": "SEV2",
+    "opened_at": "2026-03-03T12:00:00Z",
+    "title": "Settlement backlog growing, oldest message 47 minutes",
+    "description": "Queue depth has grown to 1.2M messages and consumer lag is at 47 minutes and climbing. Messages are processing without errors, just far too slowly. Producer rate has not changed.",
+    "timeline": [
+      {
+        "at": "2026-02-25T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed payments-worker to production (most recent release)"
+      },
+      {
+        "at": "2026-03-03T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on payments-worker: threshold breach"
+      },
+      {
+        "at": "2026-03-03T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-03T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "payments-worker",
+      "start": "2026-03-03T10:00:00Z",
+      "end": "2026-03-03T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "queue_consumer_lag",
+      "root_cause_statement": "Consumers cannot keep up with producers; the backlog and its age both grow.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-009",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-006",
+    "service": "notify-dispatch",
+    "severity": "SEV3",
+    "opened_at": "2026-03-03T16:00:00Z",
+    "title": "Delivery provider returning 429",
+    "description": "The delivery provider is returning HTTP 429 with a Retry-After header on about a third of sends. No 5xx responses at all. Started after we increased send concurrency this morning.",
+    "timeline": [
+      {
+        "at": "2026-02-24T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed notify-dispatch to production (most recent release)"
+      },
+      {
+        "at": "2026-03-03T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on notify-dispatch: threshold breach"
+      },
+      {
+        "at": "2026-03-03T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-03T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "notify-dispatch",
+      "start": "2026-03-03T14:00:00Z",
+      "end": "2026-03-03T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "rate_limit_throttling",
+      "root_cause_statement": "An upstream is rejecting requests with 429 because this service crossed a published quota.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-007",
+    "service": "auth-gateway",
+    "severity": "SEV1",
+    "opened_at": "2026-03-04T08:00:00Z",
+    "title": "Cannot resolve token service hostname",
+    "description": "Connections to the token service fail immediately with NXDOMAIN. Addressing the same host by IP works fine. Every caller is affected regardless of which host serves the request.",
+    "timeline": [
+      {
+        "at": "2026-02-24T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed auth-gateway to production (most recent release)"
+      },
+      {
+        "at": "2026-03-04T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on auth-gateway: threshold breach"
+      },
+      {
+        "at": "2026-03-04T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-04T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "auth-gateway",
+      "start": "2026-03-04T06:00:00Z",
+      "end": "2026-03-04T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "dns_misconfiguration",
+      "root_cause_statement": "Name resolution for a dependency fails, so connections never get established.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-008",
+    "service": "inventory-cache",
+    "severity": "SEV2",
+    "opened_at": "2026-03-04T12:00:00Z",
+    "title": "Provider returning RESOURCE_EXHAUSTED on all writes",
+    "description": "Writes are rejected with 'RESOURCE_EXHAUSTED: quota exceeded for provisioned capacity units'. The error names the limit directly. Reducing our write rate made no difference.",
+    "timeline": [
+      {
+        "at": "2026-02-23T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed inventory-cache to production (most recent release)"
+      },
+      {
+        "at": "2026-03-04T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on inventory-cache: threshold breach"
+      },
+      {
+        "at": "2026-03-04T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-04T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "inventory-cache",
+      "start": "2026-03-04T10:00:00Z",
+      "end": "2026-03-04T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "resource_quota_exceeded",
+      "root_cause_statement": "A provisioned resource limit is fully consumed and does not recover when load drops.",
+      "tier": "ticket_sufficient",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-009",
+    "service": "checkout-api",
+    "severity": "SEV2",
+    "opened_at": "2026-03-04T16:00:00Z",
+    "title": "Backing service CPU spiking in a regular rhythm",
+    "description": "Every half hour or so the backing service CPU spikes hard for about a minute, latency triples, then it recovers by itself with nobody touching it. The cache tier reports healthy and its own latency is flat throughout.",
+    "timeline": [
+      {
+        "at": "2026-03-02T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed checkout-api to production (most recent release)"
+      },
+      {
+        "at": "2026-03-04T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on checkout-api: threshold breach"
+      },
+      {
+        "at": "2026-03-04T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-04T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "checkout-api",
+      "start": "2026-03-04T14:00:00Z",
+      "end": "2026-03-04T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "cache_stampede",
+      "root_cause_statement": "A hot key expired and concurrent misses stampeded the origin simultaneously.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-007",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-010",
+    "service": "session-store",
+    "severity": "SEV2",
+    "opened_at": "2026-03-05T08:00:00Z",
+    "title": "Some hosts rejecting tokens that others accept",
+    "description": "A third of session validations are failing with 'token used before issued'. The same token succeeds when retried and lands on a different host. The issuing service reports no problems.",
+    "timeline": [
+      {
+        "at": "2026-03-03T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed session-store to production (most recent release)"
+      },
+      {
+        "at": "2026-03-05T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on session-store: threshold breach"
+      },
+      {
+        "at": "2026-03-05T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-05T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "session-store",
+      "start": "2026-03-05T06:00:00Z",
+      "end": "2026-03-05T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "clock_skew_auth_failure",
+      "root_cause_statement": "A verifier clock drifted beyond the allowed skew, so valid signed tokens are rejected.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-011",
+    "service": "report-builder",
+    "severity": "SEV3",
+    "opened_at": "2026-03-05T12:00:00Z",
+    "title": "Scheduled reports getting slower week over week",
+    "description": "Nightly report generation has gone from 4 minutes to 26 minutes over about two weeks. The slowdown tracks our row count rather than our traffic, which has been flat. No deploys in that period.",
+    "timeline": [
+      {
+        "at": "2026-03-02T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed report-builder to production (most recent release)"
+      },
+      {
+        "at": "2026-03-05T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on report-builder: threshold breach"
+      },
+      {
+        "at": "2026-03-05T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-05T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "report-builder",
+      "start": "2026-03-05T10:00:00Z",
+      "end": "2026-03-05T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "db_slow_query_missing_index",
+      "root_cause_statement": "A query degraded, typically from a missing or unused index, raising query execution time.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-001",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-012",
+    "service": "ledger-sync",
+    "severity": "SEV2",
+    "opened_at": "2026-03-05T16:00:00Z",
+    "title": "Sync writes failing but health check still green",
+    "description": "Ledger writes are failing while the service health endpoint keeps returning 200 and reads work normally. The health check only performs a read.",
+    "timeline": [
+      {
+        "at": "2026-03-01T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed ledger-sync to production (most recent release)"
+      },
+      {
+        "at": "2026-03-05T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on ledger-sync: threshold breach"
+      },
+      {
+        "at": "2026-03-05T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-05T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "ledger-sync",
+      "start": "2026-03-05T14:00:00Z",
+      "end": "2026-03-05T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "disk_full",
+      "root_cause_statement": "A volume reached capacity and writes fail with ENOSPC.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-008",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-013",
+    "service": "media-transcode",
+    "severity": "SEV2",
+    "opened_at": "2026-03-06T08:00:00Z",
+    "title": "Memory sawtooth on transcode workers",
+    "description": "Worker memory climbs steadily to the limit, the process dies, and it starts over. The pattern repeats on a fixed period. Job volume is flat and did not fall overnight when traffic did.",
+    "timeline": [
+      {
+        "at": "2026-03-01T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed media-transcode to production (most recent release)"
+      },
+      {
+        "at": "2026-03-06T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on media-transcode: threshold breach"
+      },
+      {
+        "at": "2026-03-06T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-06T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "media-transcode",
+      "start": "2026-03-06T06:00:00Z",
+      "end": "2026-03-06T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "memory_leak_oom",
+      "root_cause_statement": "Memory grows without bound until the orchestrator kills the process; the cycle repeats.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-004",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-014",
+    "service": "notify-dispatch",
+    "severity": "SEV2",
+    "opened_at": "2026-03-06T12:00:00Z",
+    "title": "Digest batching behaviour changed with no release",
+    "description": "Notification batching switched from hourly digests to per-event sends at 09:20, sharply, in one interval. There has been no deploy to this service in six days and no infrastructure change in the window.",
+    "timeline": [
+      {
+        "at": "2026-02-28T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed notify-dispatch v4.1.0 to production (most recent release)"
+      },
+      {
+        "at": "2026-03-06T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on notify-dispatch: threshold breach"
+      },
+      {
+        "at": "2026-03-06T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-06T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "notify-dispatch",
+      "start": "2026-03-06T10:00:00Z",
+      "end": "2026-03-06T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "config_drift_feature_flag",
+      "root_cause_statement": "A feature flag or configuration value changed behaviour without a deploy.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-005",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-015",
+    "service": "payments-worker",
+    "severity": "SEV1",
+    "opened_at": "2026-03-06T16:00:00Z",
+    "title": "Settlement failures tracking the provider status page",
+    "description": "Our settlement error rate started climbing a few minutes after the provider began returning server errors. Our CPU, memory and connection counts are all at normal levels throughout.",
+    "timeline": [
+      {
+        "at": "2026-02-27T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed payments-worker to production (most recent release)"
+      },
+      {
+        "at": "2026-03-06T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on payments-worker: threshold breach"
+      },
+      {
+        "at": "2026-03-06T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-06T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "payments-worker",
+      "start": "2026-03-06T14:00:00Z",
+      "end": "2026-03-06T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "upstream_dependency_outage",
+      "root_cause_statement": "A dependency this service calls started failing with server errors; this service is healthy.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-016",
+    "service": "auth-gateway",
+    "severity": "SEV1",
+    "opened_at": "2026-03-07T08:00:00Z",
+    "title": "Total connection failure with no ramp",
+    "description": "Went from zero errors to essentially every request failing inside a single scrape interval. There was no gradual increase at all. Load has been steady and resource usage is unremarkable.",
+    "timeline": [
+      {
+        "at": "2026-02-27T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed auth-gateway to production (most recent release)"
+      },
+      {
+        "at": "2026-03-07T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on auth-gateway: threshold breach"
+      },
+      {
+        "at": "2026-03-07T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-07T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "auth-gateway",
+      "start": "2026-03-07T06:00:00Z",
+      "end": "2026-03-07T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "expired_tls_certificate",
+      "root_cause_statement": "TLS handshakes fail because the leaf certificate passed its notAfter date.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-002",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-017",
+    "service": "search-indexer",
+    "severity": "SEV2",
+    "opened_at": "2026-03-07T12:00:00Z",
+    "title": "Index falling behind writes",
+    "description": "Documents are taking over an hour to become searchable. The backlog is growing steadily. Write volume into the system has not changed, but two of the six indexer replicas have been crash-looping.",
+    "timeline": [
+      {
+        "at": "2026-02-26T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed search-indexer to production (most recent release)"
+      },
+      {
+        "at": "2026-03-07T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on search-indexer: threshold breach"
+      },
+      {
+        "at": "2026-03-07T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-07T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "search-indexer",
+      "start": "2026-03-07T10:00:00Z",
+      "end": "2026-03-07T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "queue_consumer_lag",
+      "root_cause_statement": "Consumers cannot keep up with producers; the backlog and its age both grow.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-009",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-018",
+    "service": "inventory-cache",
+    "severity": "SEV2",
+    "opened_at": "2026-03-07T16:00:00Z",
+    "title": "Origin hammered at regular intervals",
+    "description": "The origin service sees a burst of identical concurrent requests at a fixed interval, always for the same small set of popular keys, and the burst subsides within two minutes without anyone doing anything.",
+    "timeline": [
+      {
+        "at": "2026-03-05T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed inventory-cache to production (most recent release)"
+      },
+      {
+        "at": "2026-03-07T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on inventory-cache: threshold breach"
+      },
+      {
+        "at": "2026-03-07T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-07T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "inventory-cache",
+      "start": "2026-03-07T14:00:00Z",
+      "end": "2026-03-07T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "cache_stampede",
+      "root_cause_statement": "A hot key expired and concurrent misses stampeded the origin simultaneously.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-007",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-019",
+    "service": "checkout-api",
+    "severity": "SEV1",
+    "opened_at": "2026-03-08T08:00:00Z",
+    "title": "Request timeouts waiting on database handles",
+    "description": "Application logs are full of 'TimeoutError: pool exhausted' and 'could not obtain a connection within 30s'. The database itself reports normal query execution times.",
+    "timeline": [
+      {
+        "at": "2026-03-05T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed checkout-api to production (most recent release)"
+      },
+      {
+        "at": "2026-03-08T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on checkout-api: threshold breach"
+      },
+      {
+        "at": "2026-03-08T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-08T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "checkout-api",
+      "start": "2026-03-08T06:00:00Z",
+      "end": "2026-03-08T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "connection_pool_exhaustion",
+      "root_cause_statement": "Requests queue waiting for a database connection; the pool is at its configured maximum.",
+      "tier": "runbook_sufficient",
+      "gold_runbook": "RB-003",
+      "plausible_distractors": []
+    }
+  },
+  {
+    "id": "INC-020",
+    "service": "checkout-api",
+    "severity": "SEV1",
+    "opened_at": "2026-03-08T12:00:00Z",
+    "title": "Checkout p99 latency degraded, customers reporting timeouts",
+    "description": "Checkout p99 has gone from around 300ms to several seconds and the error rate is up. Support is getting timeout complaints. We have not deployed today. Nothing obvious in the application logs beyond timeouts.",
+    "timeline": [
+      {
+        "at": "2026-03-05T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed checkout-api to production (most recent release)"
+      },
+      {
+        "at": "2026-03-08T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on checkout-api: threshold breach"
+      },
+      {
+        "at": "2026-03-08T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-08T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "checkout-api",
+      "start": "2026-03-08T10:00:00Z",
+      "end": "2026-03-08T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "connection_pool_exhaustion",
+      "root_cause_statement": "Requests queue waiting for a database connection; the pool is at its configured maximum.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-003",
+      "plausible_distractors": [
+        "db_slow_query_missing_index",
+        "upstream_dependency_outage"
+      ]
+    }
+  },
+  {
+    "id": "INC-021",
+    "service": "report-builder",
+    "severity": "SEV2",
+    "opened_at": "2026-03-08T16:00:00Z",
+    "title": "Report API latency degraded through the afternoon",
+    "description": "Report endpoints are slow and some callers are timing out. It started early this afternoon. No release went out today, and the team is not sure whether this is us or something we depend on.",
+    "timeline": [
+      {
+        "at": "2026-03-04T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed report-builder to production (most recent release)"
+      },
+      {
+        "at": "2026-03-08T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on report-builder: threshold breach"
+      },
+      {
+        "at": "2026-03-08T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-08T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "report-builder",
+      "start": "2026-03-08T14:00:00Z",
+      "end": "2026-03-08T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "db_slow_query_missing_index",
+      "root_cause_statement": "A query degraded, typically from a missing or unused index, raising query execution time.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-001",
+      "plausible_distractors": [
+        "connection_pool_exhaustion",
+        "upstream_dependency_outage"
+      ]
+    }
+  },
+  {
+    "id": "INC-022",
+    "service": "auth-gateway",
+    "severity": "SEV1",
+    "opened_at": "2026-03-09T08:00:00Z",
+    "title": "Gateway latency and errors both elevated",
+    "description": "The gateway is slow and throwing errors. It started about an hour ago. We have not changed anything on our side today and the on-call engineer cannot tell from the dashboard where the time is going.",
+    "timeline": [
+      {
+        "at": "2026-03-04T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed auth-gateway to production (most recent release)"
+      },
+      {
+        "at": "2026-03-09T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on auth-gateway: threshold breach"
+      },
+      {
+        "at": "2026-03-09T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-09T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "auth-gateway",
+      "start": "2026-03-09T06:00:00Z",
+      "end": "2026-03-09T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "upstream_dependency_outage",
+      "root_cause_statement": "A dependency this service calls started failing with server errors; this service is healthy.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": [
+        "connection_pool_exhaustion",
+        "db_slow_query_missing_index"
+      ]
+    }
+  },
+  {
+    "id": "INC-023",
+    "service": "ledger-sync",
+    "severity": "SEV2",
+    "opened_at": "2026-03-09T12:00:00Z",
+    "title": "Ledger sync slow and timing out intermittently",
+    "description": "Sync operations that normally finish in under a second are taking many seconds or timing out outright. It is intermittent. No deploy, no config change that anyone is aware of.",
+    "timeline": [
+      {
+        "at": "2026-03-03T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed ledger-sync to production (most recent release)"
+      },
+      {
+        "at": "2026-03-09T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on ledger-sync: threshold breach"
+      },
+      {
+        "at": "2026-03-09T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-09T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "ledger-sync",
+      "start": "2026-03-09T10:00:00Z",
+      "end": "2026-03-09T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "connection_pool_exhaustion",
+      "root_cause_statement": "Requests queue waiting for a database connection; the pool is at its configured maximum.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-003",
+      "plausible_distractors": [
+        "db_slow_query_missing_index",
+        "queue_consumer_lag"
+      ]
+    }
+  },
+  {
+    "id": "INC-024",
+    "service": "search-indexer",
+    "severity": "SEV2",
+    "opened_at": "2026-03-09T16:00:00Z",
+    "title": "Indexer throughput down, latency up",
+    "description": "The indexer is noticeably slower than yesterday and p99 is well above normal. Error rate is slightly elevated. Nobody has shipped anything to this service this week.",
+    "timeline": [
+      {
+        "at": "2026-03-02T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed search-indexer to production (most recent release)"
+      },
+      {
+        "at": "2026-03-09T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on search-indexer: threshold breach"
+      },
+      {
+        "at": "2026-03-09T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-09T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "search-indexer",
+      "start": "2026-03-09T14:00:00Z",
+      "end": "2026-03-09T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "db_slow_query_missing_index",
+      "root_cause_statement": "A query degraded, typically from a missing or unused index, raising query execution time.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-001",
+      "plausible_distractors": [
+        "connection_pool_exhaustion",
+        "memory_leak_oom"
+      ]
+    }
+  },
+  {
+    "id": "INC-025",
+    "service": "checkout-api",
+    "severity": "SEV1",
+    "opened_at": "2026-03-10T08:00:00Z",
+    "title": "Checkout failing for a subset of customers",
+    "description": "Checkout is failing for a meaningful share of customers and latency is up. We cannot reproduce it reliably in staging. The last deploy was three days ago.",
+    "timeline": [
+      {
+        "at": "2026-03-02T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed checkout-api to production (most recent release)"
+      },
+      {
+        "at": "2026-03-10T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on checkout-api: threshold breach"
+      },
+      {
+        "at": "2026-03-10T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-10T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "checkout-api",
+      "start": "2026-03-10T06:00:00Z",
+      "end": "2026-03-10T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "upstream_dependency_outage",
+      "root_cause_statement": "A dependency this service calls started failing with server errors; this service is healthy.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": [
+        "connection_pool_exhaustion",
+        "bad_deploy_regression"
+      ]
+    }
+  },
+  {
+    "id": "INC-026",
+    "service": "notify-dispatch",
+    "severity": "SEV2",
+    "opened_at": "2026-03-10T12:00:00Z",
+    "title": "Delivery failures against the downstream provider",
+    "description": "A large share of sends are failing at the provider. The provider status page shows no incident. We are not sure whether to fail over to the secondary provider or wait it out.",
+    "timeline": [
+      {
+        "at": "2026-03-01T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed notify-dispatch to production (most recent release)"
+      },
+      {
+        "at": "2026-03-10T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on notify-dispatch: threshold breach"
+      },
+      {
+        "at": "2026-03-10T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-10T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "notify-dispatch",
+      "start": "2026-03-10T10:00:00Z",
+      "end": "2026-03-10T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "rate_limit_throttling",
+      "root_cause_statement": "An upstream is rejecting requests with 429 because this service crossed a published quota.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": [
+        "upstream_dependency_outage",
+        "config_drift_feature_flag"
+      ]
+    }
+  },
+  {
+    "id": "INC-027",
+    "service": "payments-worker",
+    "severity": "SEV1",
+    "opened_at": "2026-03-10T16:00:00Z",
+    "title": "Payment authorisations failing at the processor",
+    "description": "Authorisation calls to the processor are failing in volume. The processor has not posted anything publicly yet and our account manager is unreachable, so we have no confirmation either way.",
+    "timeline": [
+      {
+        "at": "2026-03-08T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed payments-worker to production (most recent release)"
+      },
+      {
+        "at": "2026-03-10T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on payments-worker: threshold breach"
+      },
+      {
+        "at": "2026-03-10T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-10T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "payments-worker",
+      "start": "2026-03-10T14:00:00Z",
+      "end": "2026-03-10T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "upstream_dependency_outage",
+      "root_cause_statement": "A dependency this service calls started failing with server errors; this service is healthy.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-006",
+      "plausible_distractors": [
+        "rate_limit_throttling",
+        "connection_pool_exhaustion"
+      ]
+    }
+  },
+  {
+    "id": "INC-028",
+    "service": "session-store",
+    "severity": "SEV2",
+    "opened_at": "2026-03-11T08:00:00Z",
+    "title": "Intermittent authentication failures",
+    "description": "Users are being logged out unexpectedly and some API calls are rejected as unauthenticated. It is intermittent rather than total. The identity provider says everything is fine on their side.",
+    "timeline": [
+      {
+        "at": "2026-03-08T08:00:00Z",
+        "source": "deploy",
+        "text": "Deployed session-store to production (most recent release)"
+      },
+      {
+        "at": "2026-03-11T07:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on session-store: threshold breach"
+      },
+      {
+        "at": "2026-03-11T08:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-11T08:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "session-store",
+      "start": "2026-03-11T06:00:00Z",
+      "end": "2026-03-11T08:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "clock_skew_auth_failure",
+      "root_cause_statement": "A verifier clock drifted beyond the allowed skew, so valid signed tokens are rejected.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": [
+        "dns_misconfiguration",
+        "expired_tls_certificate"
+      ]
+    }
+  },
+  {
+    "id": "INC-029",
+    "service": "auth-gateway",
+    "severity": "SEV1",
+    "opened_at": "2026-03-11T12:00:00Z",
+    "title": "Authentication broadly failing",
+    "description": "Authentication is failing across the board. The team is split on whether this is a network problem, a certificate problem or a problem at the identity provider.",
+    "timeline": [
+      {
+        "at": "2026-03-07T12:00:00Z",
+        "source": "deploy",
+        "text": "Deployed auth-gateway to production (most recent release)"
+      },
+      {
+        "at": "2026-03-11T11:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on auth-gateway: threshold breach"
+      },
+      {
+        "at": "2026-03-11T12:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-11T12:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "auth-gateway",
+      "start": "2026-03-11T10:00:00Z",
+      "end": "2026-03-11T12:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "dns_misconfiguration",
+      "root_cause_statement": "Name resolution for a dependency fails, so connections never get established.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": [
+        "clock_skew_auth_failure",
+        "upstream_dependency_outage"
+      ]
+    }
+  },
+  {
+    "id": "INC-030",
+    "service": "inventory-cache",
+    "severity": "SEV2",
+    "opened_at": "2026-03-11T16:00:00Z",
+    "title": "Writes rejected by the storage provider",
+    "description": "The storage provider is rejecting a large share of our writes. We reduced our write rate as a precaution but it has not obviously helped. No deploys today.",
+    "timeline": [
+      {
+        "at": "2026-03-07T16:00:00Z",
+        "source": "deploy",
+        "text": "Deployed inventory-cache to production (most recent release)"
+      },
+      {
+        "at": "2026-03-11T15:56:00Z",
+        "source": "alerting",
+        "text": "Alert fired on inventory-cache: threshold breach"
+      },
+      {
+        "at": "2026-03-11T16:00:00Z",
+        "source": "on-call",
+        "text": "Incident opened and acknowledged"
+      },
+      {
+        "at": "2026-03-11T16:06:00Z",
+        "source": "on-call",
+        "text": "Paging secondary; no root cause identified yet"
+      }
+    ],
+    "metric_window": {
+      "service": "inventory-cache",
+      "start": "2026-03-11T14:00:00Z",
+      "end": "2026-03-11T16:55:00Z"
+    },
+    "ground_truth": {
+      "root_cause_id": "resource_quota_exceeded",
+      "root_cause_statement": "A provisioned resource limit is fully consumed and does not recover when load drops.",
+      "tier": "evidence_required",
+      "gold_runbook": "RB-010",
+      "plausible_distractors": [
+        "rate_limit_throttling",
+        "disk_full"
+      ]
+    }
+  }
+]

@@ -1,0 +1,5 @@
+# The corpus is regenerated and diffed in CI. Without this, a checkout on
+# Windows rewrites it to CRLF, the Linux runner regenerates it as LF, and
+# the reproducibility check fails for a reason unrelated to the generator.
+* text=auto eol=lf
+*.png binary

@@ -1,0 +1,49 @@
+name: tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install
+        run: uv pip install --system -e ".[mcp,dev]"
+
+      # The corpus is committed, but it is also generated. Regenerating and
+      # diffing proves the generator is deterministic and that the data in
+      # the repo is what the script actually produces.
+      - name: Corpus is reproducible from the generator
+        run: |
+          python scripts/generate_data.py
+          git diff --exit-code -- data/
+
+      # Validity gates before anything else: if a ticket leaks its own
+      # answer, the results table is measuring nothing.
+      - name: Validity checks
+        run: python -m triage.cli analyze
+
+      - name: Tests
+        run: pytest -q
+
+      # No model, no network, no cost - proves the harness runs end to end.
+      - name: Rules-only control sweep
+        run: python -m triage.cli run --provider offline --arms baseline --out /tmp/ci-control.json
+
+      - name: Report renders
+        run: |
+          python -m triage.cli report results/runs/sweep-sonnet.json
+          python -m triage.cli economics results/runs/sweep-sonnet.json

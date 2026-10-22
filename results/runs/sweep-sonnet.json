@@ -1,0 +1,3640 @@
+{
+  "provider": "claude_cli",
+  "model": "sonnet",
+  "started_at": "2026-10-21T23:22:18.305887+00:00",
+  "finished_at": "2026-10-21T23:40:57.129590+00:00",
+  "notes": {
+    "cost_basis": "Claude Code reports list API prices; on a subscription you are not billed this. Comparable across arms, not a quote for running it.",
+    "data": "Synthetic. See data/ and scripts/generate_data.py."
+  },
+  "cells": [
+    {
+      "arm": "baseline",
+      "incident_id": "INC-001",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "expired_tls_certificate",
+      "truth": "expired_tls_certificate",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "Clients report 'x509: certificate has expired or is not yet valid' on every TLS handshake, which is the direct signature of a leaf certificate past its notAfter date. Normal CPU and DB dashboards rule out resource exhaustion and slow-query causes. Clock skew is less likely because all clients fail at once with a certificate validity error, not token rejection. A bad deploy is not indicated since no deploy is mentioned.",
+      "evidence_used": [
+        "Client logs: 'x509: certificate has expired or is not yet valid'",
+        "All API clients failing TLS handshake simultaneously",
+        "CPU and database dashboards normal",
+        "No deploy or config change mentioned"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.993,
+      "cost_usd": 0.011313700000000001,
+      "input_tokens": 2649,
+      "output_tokens": 348,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "f52c4607-2bf0-4c56-a3d3-9171df591ea0",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-002",
+      "tier": "ticket_sufficient",
+      "service": "media-transcode",
+      "predicted": "disk_full",
+      "truth": "disk_full",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Workers report 'ENOSPC: No space left on device' on writes while read-only jobs succeed. That is the signature of a full volume. I ruled out resource_quota_exceeded because the error is a filesystem ENOSPC, not a provisioned-limit error, and the ticket gives no sign of a quota. Memory, connection pool, and upstream failures don't produce ENOSPC.",
+      "evidence_used": [
+        "Error 'ENOSPC: No space left on device' when writing finished renditions",
+        "Jobs that only read input succeed, so the failure is limited to writes"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.517,
+      "cost_usd": 0.0077329,
+      "input_tokens": 2637,
+      "output_tokens": 310,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "c7717cbc-408e-49d9-967b-6db454bdaa62",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-003",
+      "tier": "ticket_sufficient",
+      "service": "search-indexer",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Pods are OOMKilled (exit 137) on a regular ~40 minute cycle, with memory climbing steadily from start to kill. That is the signature of a leak. Request volume is flat, so a load spike is ruled out. Nothing mentions a deploy, so I did not choose bad_deploy_regression, though a release could have introduced the leak. resource_quota_exceeded, disk_full and connection_pool_exhaustion don't fit because the failure is per-process memory growth that resets on restart.",
+      "evidence_used": [
+        "Termination reason OOMKilled, exit code 137",
+        "Restarts roughly every 40 minutes, a repeating cycle",
+        "Memory climbs steadily from start to kill",
+        "Request volume flat all week"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.621,
+      "cost_usd": 0.0084017,
+      "input_tokens": 2657,
+      "output_tokens": 369,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "b4ed934e-bcf7-4575-be0d-fa0245d01c59",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-004",
+      "tier": "ticket_sufficient",
+      "service": "checkout-api",
+      "predicted": "bad_deploy_regression",
+      "truth": "bad_deploy_regression",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "The error rate stepped from 0.4% to 19% in one scrape interval, exactly at the v2.8.1 deploy. Traffic, memory and database metrics are unchanged, so I ruled out memory leak/OOM, connection pool exhaustion, slow queries and load-driven causes. A feature-flag change without a deploy is unlikely because the timing matches the release. The ticket gives no evidence of an upstream outage, certificate, DNS or quota problem. One caveat is a time mismatch: the ticket says the deploy was at 14:05, but the incident opened at 08:00Z, which could be a timezone difference.",
+      "evidence_used": [
+        "Error rate jumped 0.4% to 19% in a single scrape interval",
+        "Jump exactly matches the 14:05 deploy of v2.8.1",
+        "Traffic, memory and database metrics unchanged",
+        "Title attributes the step-up to release v2.8.1"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.766,
+      "cost_usd": 0.009042,
+      "input_tokens": 2661,
+      "output_tokens": 431,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "b404a484-fa86-49a9-892c-212743f63d2f",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-005",
+      "tier": "ticket_sufficient",
+      "service": "payments-worker",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "Queue depth and message age are both growing, producer rate is unchanged, and messages process without errors, only slowly. That is the queue_consumer_lag pattern. I ruled out upstream outage, pool exhaustion, slow query, and rate limiting because the ticket shows no errors, 429s, or DB/dependency signals. The ticket doesn't say why consumers are slow, but lag is the best-supported cause.",
+      "evidence_used": [
+        "Queue depth 1.2M and growing",
+        "Consumer lag 47 minutes and climbing",
+        "Messages processing without errors, just slowly",
+        "Producer rate unchanged"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.826,
+      "cost_usd": 0.0080477,
+      "input_tokens": 2663,
+      "output_tokens": 331,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "6a31c0fb-1fa9-41d1-be19-f61ddf349d44",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-006",
+      "tier": "ticket_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "rate_limit_throttling",
+      "truth": "rate_limit_throttling",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "The provider returns HTTP 429 with Retry-After on about a third of sends, and the onset follows our increase in send concurrency, so we likely crossed the provider's quota. I ruled out upstream_dependency_outage because there are no 5xx responses and the provider is rejecting requests rather than failing. I ruled out a bad deploy and config drift because the trigger was a deliberate concurrency increase, not a release or a surprise config change. Connection pool exhaustion and queue lag don't fit, because the failures are explicit 429s from the provider.",
+      "evidence_used": [
+        "HTTP 429 with Retry-After on ~1/3 of sends",
+        "No 5xx responses at all",
+        "Started after send concurrency was increased this morning"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.458,
+      "cost_usd": 0.0084919,
+      "input_tokens": 2652,
+      "output_tokens": 367,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "c6463cfb-4bb3-42d4-aa0f-9b585ef10bc3",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-007",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "dns_misconfiguration",
+      "truth": "dns_misconfiguration",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "The ticket reports NXDOMAIN for the token service hostname, while the same host reached by IP works. That means name resolution is failing and the service itself is up. Every caller is affected regardless of host, so the cause is central DNS and not a single node's resolver. I ruled out upstream_dependency_outage because the service answers by IP and returns no server errors. I ruled out TLS and clock skew because connections never get established. Connection pool exhaustion and rate limiting don't fit an immediate NXDOMAIN.",
+      "evidence_used": [
+        "Connections fail immediately with NXDOMAIN",
+        "Addressing the same host by IP works fine",
+        "Every caller is affected regardless of which host serves the request"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.933,
+      "cost_usd": 0.008229199999999999,
+      "input_tokens": 2646,
+      "output_tokens": 356,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "6cd2f451-df89-4818-8c63-4c078b71ffa2",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-008",
+      "tier": "ticket_sufficient",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The error names a provisioned capacity-unit quota, meaning a provisioned resource limit is fully consumed. Reducing the write rate did not help, so the limit does not recover when load drops. This rules out rate_limit_throttling, which would show 429s and ease when the rate drops. It also rules out upstream_dependency_outage, which would show server errors rather than an explicit quota message. Disk_full and connection_pool_exhaustion don't match the error text.",
+      "evidence_used": [
+        "Error: RESOURCE_EXHAUSTED: quota exceeded for provisioned capacity units",
+        "The error names the limit directly",
+        "Reducing write rate made no difference, so no recovery when load drops",
+        "All writes rejected"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.39,
+      "cost_usd": 0.0083885,
+      "input_tokens": 2667,
+      "output_tokens": 363,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "dfae024c-c204-4140-8e35-c69e872eb55b",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-009",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "Periodic CPU spikes on the backing service (origin) lasting about a minute, then self-recovery, fit a hot key expiring on a regular TTL and concurrent misses hitting the origin. The cache tier is healthy with flat latency, so the cache isn't failing and the load shifts to the origin. I ruled out a bad deploy (the pattern recurs and nobody touched anything), a memory leak (it recovers without restarts), a slow query (it's periodic, not constant), and connection pool or quota exhaustion (they don't self-recover on a regular rhythm). The ticket doesn't state the TTL or show miss rates directly, so confidence is moderate.",
+      "evidence_used": [
+        "CPU spikes on the backing service every ~30 minutes for ~1 minute",
+        "Self-recovery with no intervention",
+        "Cache tier healthy with flat latency",
+        "Latency triples only during spikes"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.558,
+      "cost_usd": 0.009124100000000001,
+      "input_tokens": 2668,
+      "output_tokens": 420,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "8dbdeb9d-5d6d-4d10-bd6a-7263855baa84",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-010",
+      "tier": "runbook_sufficient",
+      "service": "session-store",
+      "predicted": "clock_skew_auth_failure",
+      "truth": "clock_skew_auth_failure",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "\"Token used before issued\" means the token's iat is in the future from the verifier's view, so that host's clock is behind the issuer's. The failures are host-specific: the same token succeeds on another host. That points to drift on some verifier hosts, not a token or issuer defect. I ruled out a bad deploy, because a regression would not make the same token pass on some hosts and fail on others. I ruled out an upstream outage, because the issuer is healthy and the errors are validation rejections, not server errors. Config drift is unlikely, since nothing in the ticket mentions a changed flag.",
+      "evidence_used": [
+        "Error message 'token used before issued'",
+        "Same token succeeds when retried on a different host",
+        "About a third of validations fail, consistent with a subset of hosts",
+        "Issuing service reports no problems"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.881,
+      "cost_usd": 0.0085692,
+      "input_tokens": 2641,
+      "output_tokens": 387,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "3e9a5244-7e83-43b7-9ca3-b2515091f105",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-011",
+      "tier": "runbook_sufficient",
+      "service": "report-builder",
+      "predicted": "db_slow_query_missing_index",
+      "truth": "db_slow_query_missing_index",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.7,
+      "reasoning": "Gradual degradation that scales with row count rather than traffic, with no deploys, is the signature of a query whose cost grows with table size, such as a full scan from a missing or unused index. I ruled out bad_deploy_regression and config_drift because nothing changed and the slowdown is gradual, not a step. I ruled out connection_pool_exhaustion, queue_consumer_lag and memory_leak_oom because traffic is flat and the ticket shows no queueing, backlog or restarts. The ticket doesn't name the query, so confidence is moderate.",
+      "evidence_used": [
+        "Runtime grew from 4 to 26 minutes over about two weeks",
+        "Slowdown tracks row count, not traffic, which is flat",
+        "No deploys in the period",
+        "Gradual degradation rather than a step change"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.211,
+      "cost_usd": 0.0086082,
+      "input_tokens": 2653,
+      "output_tokens": 391,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "96784d28-03ed-4062-a97e-82acf66314c3",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-012",
+      "tier": "runbook_sufficient",
+      "service": "ledger-sync",
+      "predicted": "unknown",
+      "truth": "disk_full",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.5,
+      "reasoning": "Writes fail while reads and a read-only health check succeed, which points to a write-path problem. That fits disk_full (ENOSPC), a read-only DB or failover, or a quota. It also fits a bad deploy or a config change. The ticket has no error messages, no timeline, no deploy or config events, and no metrics. I can't rule out any of these, and no single cause is supported, so I'm answering unknown.",
+      "evidence_used": [
+        "Writes fail while reads work normally",
+        "Health endpoint returns 200 because it only performs a read",
+        "No error text, deploy timestamp, config change, or metric values in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.348,
+      "cost_usd": 0.007843900000000001,
+      "input_tokens": 2635,
+      "output_tokens": 322,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "5a7593c4-86ea-46c4-8b17-f48f11f39ba5",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-013",
+      "tier": "runbook_sufficient",
+      "service": "media-transcode",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Memory climbs steadily to the limit, the process is killed, and the cycle repeats on a fixed period. That is the memory_leak_oom signature. Flat job volume that did not fall with overnight traffic points to a leak per unit of time or work, not a load-driven spike. I ruled out resource_quota_exceeded because the memory resets on each restart instead of staying consumed. I ruled out queue_consumer_lag and bad_deploy_regression because the ticket gives no backlog or deploy timestamp.",
+      "evidence_used": [
+        "Memory climbs steadily to the limit, the process dies, and it restarts",
+        "The pattern repeats on a fixed period",
+        "Job volume is flat and did not fall when overnight traffic dropped",
+        "No deploy, backlog, 429, or disk evidence in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.39,
+      "cost_usd": 0.0086316,
+      "input_tokens": 2654,
+      "output_tokens": 393,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "af659dca-7696-4ce3-8d18-d79a05176ea4",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-014",
+      "tier": "runbook_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "config_drift_feature_flag",
+      "truth": "config_drift_feature_flag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "Behaviour changed abruptly at 09:20 in a single interval with no deploy in six days and no infrastructure change. That pattern fits a flag or config value flipped at runtime. I ruled out bad_deploy_regression because there was no deploy. I ruled out the resource and capacity causes because the symptom is a behaviour change, not errors or latency.",
+      "evidence_used": [
+        "Batching switched from hourly digests to per-event sends at 09:20 sharply, in one interval",
+        "No deploy to the service in six days",
+        "No infrastructure change in the window"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.778,
+      "cost_usd": 0.007813500000000001,
+      "input_tokens": 2657,
+      "output_tokens": 310,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "ff31bfb4-23e9-4868-a248-0c8ad78ea4f5",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-015",
+      "tier": "runbook_sufficient",
+      "service": "payments-worker",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "Settlement errors began shortly after the provider started returning server errors and track the provider's status page. The service's own CPU, memory and connection counts are normal, so the service is healthy. I ruled out connection pool exhaustion, memory leak and resource quota because those resource metrics are normal. I ruled out rate limiting because the provider is returning server errors, not 429s. I ruled out a bad deploy and config drift because the ticket mentions no change on our side.",
+      "evidence_used": [
+        "Error rate climbed after the provider began returning server errors",
+        "Failures track the provider status page",
+        "CPU, memory and connection counts normal throughout",
+        "No mention of a deploy or config change",
+        "No 429 responses mentioned"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.698,
+      "cost_usd": 0.0082296,
+      "input_tokens": 2644,
+      "output_tokens": 357,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "191b6337-68c8-477c-803f-bf8f6a9785bc",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-016",
+      "tier": "runbook_sufficient",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "expired_tls_certificate",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.4,
+      "reasoning": "The ticket shows only a step-change to 100% connection failure with no ramp, steady load and unremarkable resource usage. That rules out the gradual causes: memory leak, disk full, queue lag, pool exhaustion and quota exhaustion. It is consistent with an expired TLS certificate, a DNS failure, a bad deploy or a config change, but the ticket gives no deploy timestamp, handshake or resolution errors, 429s or flag changes to separate them.",
+      "evidence_used": [
+        "Zero to near-total failure within a single scrape interval",
+        "No gradual ramp",
+        "Load steady and resource usage unremarkable",
+        "No error messages, deploy times, or config change info given"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.68,
+      "cost_usd": 0.0081101,
+      "input_tokens": 2644,
+      "output_tokens": 345,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "c7d6099f-090a-4cf3-8805-515fa09fa356",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-017",
+      "tier": "runbook_sufficient",
+      "service": "search-indexer",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.5,
+      "reasoning": "Write volume is unchanged, the backlog is growing steadily, and documents take over an hour to become searchable. Two of six indexer replicas are crash-looping, so consumer capacity is down and consumers can't keep up with producers. I ruled out memory_leak_oom and bad_deploy_regression because the ticket gives no crash reason (no OOMKilled, no memory growth, no deploy timestamp). I also ruled out a producer-side surge, since write volume is flat. The reason for the crash loop is still unidentified.",
+      "evidence_used": [
+        "Backlog growing steadily and documents delayed over an hour",
+        "Write volume unchanged",
+        "2 of 6 indexer replicas crash-looping, reducing consumer capacity",
+        "No evidence of OOM kills, a deploy, disk errors, or throttling in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.936,
+      "cost_usd": 0.0118696,
+      "input_tokens": 2646,
+      "output_tokens": 720,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "a26a4ba5-2450-45b4-88cf-9d934f99a05c",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-018",
+      "tier": "runbook_sufficient",
+      "service": "inventory-cache",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Bursts of identical concurrent requests at a fixed interval, always for the same small set of popular keys, match hot keys expiring on a TTL and concurrent misses hitting the origin. The burst self-resolves within two minutes once the cache is repopulated. I ruled out upstream outage and a deploy regression because nothing points to errors or a deploy time. I ruled out rate limiting because there are no 429s. I ruled out a slow query because the load is a burst of requests, not slower execution. Resource quota and queue lag would not clear on their own in a periodic pattern tied to specific keys.",
+      "evidence_used": [
+        "Burst of identical concurrent requests at the origin",
+        "Fixed, regular interval, consistent with TTL expiry",
+        "Always the same small set of popular keys",
+        "Self-resolves within two minutes without intervention"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.822,
+      "cost_usd": 0.008640199999999999,
+      "input_tokens": 2649,
+      "output_tokens": 396,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "43d8969b-79c8-4098-b4e1-8081098c251e",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-019",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "connection_pool_exhaustion",
+      "truth": "connection_pool_exhaustion",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "Logs show 'pool exhausted' and 'could not obtain a connection within 30s', while the database reports normal query execution times. That points to requests queuing for a connection, not slow queries. I ruled out db_slow_query_missing_index because query times are normal. I ruled out upstream_dependency_outage because there are no server errors from the DB. The ticket has no evidence of a deploy, config change, or quota, so I found nothing to support those.",
+      "evidence_used": [
+        "TimeoutError: pool exhausted",
+        "could not obtain a connection within 30s",
+        "Database reports normal query execution times"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.955,
+      "cost_usd": 0.0079821,
+      "input_tokens": 2641,
+      "output_tokens": 322,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "a7028a25-1268-4939-8186-df6928211f1e",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-020",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "unknown",
+      "truth": "connection_pool_exhaustion",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only reports p99 latency rising from ~300ms to several seconds, with timeouts and no deploy. No metrics or logs are included to separate the candidates. I ruled out bad_deploy_regression because nothing was deployed. I can't pick among DB slow query, connection pool exhaustion, upstream outage, cache stampede and others without specific evidence such as pool saturation, query times, or dependency errors.",
+      "evidence_used": [
+        "p99 rose from ~300ms to several seconds with elevated error rate",
+        "No deploy today",
+        "Application logs show only timeouts",
+        "No metrics content provided, only a window"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.76,
+      "cost_usd": 0.0079996,
+      "input_tokens": 2668,
+      "output_tokens": 324,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "3be46971-93b5-4344-aab8-df54c4c96e81",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-021",
+      "tier": "evidence_required",
+      "service": "report-builder",
+      "predicted": "unknown",
+      "truth": "db_slow_query_missing_index",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.85,
+      "reasoning": "The ticket gives only a vague symptom (slow report endpoints, some timeouts, gradual onset in the afternoon) and says no release went out. It has no metrics, logs, error codes or dependency data. I can rule out bad_deploy_regression because no release happened. Every other cause (slow query, pool exhaustion, upstream outage, memory leak, queue lag and so on) fits the symptom equally well, and nothing in the ticket separates them.",
+      "evidence_used": [
+        "No release went out today",
+        "Latency degraded gradually through the afternoon with some timeouts",
+        "Team unsure whether the cause is internal or a dependency",
+        "No metrics, logs, or error details in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.973,
+      "cost_usd": 0.008105000000000001,
+      "input_tokens": 2643,
+      "output_tokens": 345,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "0a058283-b1bc-4abc-9061-6245bfcf6807",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-022",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket gives only generic symptoms: elevated latency and errors, onset about an hour ago, and no changes on our side. It has no error messages, status codes, metrics breakdown, logs, or dependency data. Bad deploy is weakly argued against by \"no changes today\", but config drift, upstream outage, pool exhaustion, slow queries, and others all remain equally plausible. No single cause can be picked.",
+      "evidence_used": [
+        "Latency and errors both elevated",
+        "Started about an hour ago",
+        "No changes on our side today",
+        "On-call cannot tell where time is going",
+        "No error details, metrics, or logs in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.651,
+      "cost_usd": 0.007952800000000001,
+      "input_tokens": 2652,
+      "output_tokens": 326,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "eb57c310-0c19-44f7-934e-77201d5eb4ca",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-023",
+      "tier": "evidence_required",
+      "service": "ledger-sync",
+      "predicted": "unknown",
+      "truth": "connection_pool_exhaustion",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only says syncs are slow or time out intermittently, with no deploy or config change. No metrics, logs, or errors are included, only a metric window. Slow queries, pool exhaustion, upstream outage, cache stampede and queue lag all fit, and nothing here separates them. I ruled out bad deploy and config drift only on the reporter's word that nothing changed. That is weak evidence.",
+      "evidence_used": [
+        "Sync normally under 1s, now many seconds or timeouts",
+        "Intermittent behaviour",
+        "No known deploy or config change",
+        "No metrics, logs or error codes in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.072,
+      "cost_usd": 0.007967400000000001,
+      "input_tokens": 2647,
+      "output_tokens": 321,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "03409231-58e5-4234-9425-26b1cb3ab1d9",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-024",
+      "tier": "evidence_required",
+      "service": "search-indexer",
+      "predicted": "unknown",
+      "truth": "db_slow_query_missing_index",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only reports reduced throughput, higher p99, and a slightly elevated error rate, with no deploy this week. That rules out bad_deploy_regression as the obvious cause. There are no specific signals such as 429s, ENOSPC, OOM kills, pool-wait metrics, queue age, cert or DNS errors, or slow query data, so I can't separate the remaining candidates (slow query, pool exhaustion, queue lag, upstream, config drift).",
+      "evidence_used": [
+        "Throughput down, p99 up, error rate slightly elevated",
+        "No deploys to the service this week",
+        "No logs, metrics, or error details identifying a specific mechanism"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.565,
+      "cost_usd": 0.008052100000000001,
+      "input_tokens": 2642,
+      "output_tokens": 340,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "4555606c-7f85-424e-bef5-1bc36019809f",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-025",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only gives generic symptoms: partial checkout failures, elevated latency, not reproducible in staging. No errors, logs, or metrics identify a mechanism. The deploy was three days ago, so a deploy regression is not supported by timing. Pool exhaustion, a slow query, an upstream outage, throttling, a feature flag change and others all fit equally well and none has specific evidence.",
+      "evidence_used": [
+        "Subset of customers affected, latency up",
+        "Cannot reproduce in staging",
+        "Last deploy three days ago, so no timing correlation",
+        "No error messages, metrics values, or logs provided"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.511,
+      "cost_usd": 0.0078718,
+      "input_tokens": 2639,
+      "output_tokens": 323,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "dadac978-83fb-42db-82c9-25889e65aa60",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-026",
+      "tier": "evidence_required",
+      "service": "notify-dispatch",
+      "predicted": "unknown",
+      "truth": "rate_limit_throttling",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.5,
+      "reasoning": "The ticket only says many sends fail at the provider and the provider's status page shows no incident. It gives no error codes, so I can't tell 429 throttling (rate_limit_throttling) from 5xx errors (upstream_dependency_outage). It gives no DNS or TLS errors, no deploy or config change timestamps, and no metric values. The clean status page doesn't rule out a provider outage, and it doesn't confirm a quota problem on our side. Any single cause would be a guess.",
+      "evidence_used": [
+        "Large share of sends failing at the downstream provider",
+        "Provider status page shows no incident",
+        "No error codes, status codes, deploy or config timestamps, or metric values in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 2.977,
+      "cost_usd": 0.0081234,
+      "input_tokens": 2642,
+      "output_tokens": 347,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "156699aa-fef7-4e5d-8cfe-f65370f09593",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-027",
+      "tier": "evidence_required",
+      "service": "payments-worker",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.55,
+      "reasoning": "The ticket says authorisation calls to the processor are failing in volume, but it gives no error codes, no deploy timestamp, no flag change and no latency or resource data. The processor is unconfirmed as the source. It could be an upstream outage, but with no 5xx evidence and no confirmation I can't pick that. I ruled out rate_limit_throttling because there are no 429s or quota mentions. I ruled out bad_deploy_regression and config_drift because no change is mentioned. The other causes have no supporting evidence either.",
+      "evidence_used": [
+        "Authorisation calls to the processor failing in volume",
+        "Processor has posted nothing publicly and the account manager is unreachable, so there is no confirmation",
+        "No error codes, deploy times, config changes or resource metrics in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.75,
+      "cost_usd": 0.0084522,
+      "input_tokens": 2647,
+      "output_tokens": 378,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "0c155553-c479-4e5d-ae14-a7a26f3adb2c",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-028",
+      "tier": "evidence_required",
+      "service": "session-store",
+      "predicted": "unknown",
+      "truth": "clock_skew_auth_failure",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.4,
+      "reasoning": "The ticket shows only intermittent auth failures and logouts, with the IdP reporting healthy. That fits clock skew on a verifier, but it fits just as well a session-store problem such as eviction, a cache or pool issue, or a bad deploy. The ticket has no logs, error messages, timestamps or metrics to separate these, such as token expired or not-yet-valid errors, host clock offsets, or a deploy time. I ruled out an IdP outage because the IdP says it is fine. I can't single out any other cause from the ticket alone.",
+      "evidence_used": [
+        "Intermittent, not total, authentication failures and unexpected logouts",
+        "Identity provider reports healthy",
+        "No logs, metrics, deploy times or error strings in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.041,
+      "cost_usd": 0.008302400000000001,
+      "input_tokens": 2640,
+      "output_tokens": 366,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "29378fdf-ddcf-4936-833f-731a51903d76",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-029",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "dns_misconfiguration",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only says authentication is failing broadly and that the team is split between network, certificate and identity provider causes. It has no error messages, metrics, timestamps of change, or logs. I can't pick between expired_tls_certificate, upstream_dependency_outage, dns_misconfiguration and clock_skew_auth_failure without that evidence, so I ruled none of them in or out.",
+      "evidence_used": [
+        "Ticket description: authentication failing across the board",
+        "Team is split between network, certificate and identity provider theories",
+        "No error strings, metrics, deploy or config change data in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.505,
+      "cost_usd": 0.007823700000000001,
+      "input_tokens": 2630,
+      "output_tokens": 312,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "27445c88-eb00-41d7-b5da-5d0891a0769d",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "baseline",
+      "incident_id": "INC-030",
+      "tier": "evidence_required",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.55,
+      "reasoning": "The storage provider is rejecting writes, and cutting our write rate did not clearly help. That points to a provisioned limit that is already consumed and doesn't recover when load drops. Rate-limit throttling would normally ease once we reduced the write rate. No deploys today rules out a bad deploy. disk_full would show ENOSPC on our own volume, but here the provider is the one rejecting. An upstream outage would show server errors, not rejections. The ticket gives no error codes or metrics, so confidence is moderate.",
+      "evidence_used": [
+        "The storage provider is rejecting a large share of writes",
+        "Reducing the write rate did not obviously help",
+        "No deploys today",
+        "The ticket gives no 429 or 5xx status and no ENOSPC error"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 6.471,
+      "cost_usd": 0.0157799,
+      "input_tokens": 5824,
+      "output_tokens": 870,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "session_id": "338dac37-c1e2-41d1-bfdf-b632a4f2f3db",
+        "stop_reason": "tool_use",
+        "subtype": "success"
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-001",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "expired_tls_certificate",
+      "truth": "expired_tls_certificate",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Clients report 'x509: certificate has expired or is not yet valid', failures hit every client at once, and CPU and DB dashboards are normal. This matches the RB-002 step-function signature for an expired certificate. I ruled out upstream_dependency_outage, because it would show upstream 5xx errors rising first and clients would not see x509 errors. I ruled out load-related causes such as connection pool exhaustion, because they ramp and would show resource metrics moving. I did not rule out clock skew by direct evidence. The x509 expiry message and the simultaneous failure of all clients make an expired leaf certificate the better fit.",
+      "evidence_used": [
+        "Client logs: 'x509: certificate has expired or is not yet valid'",
+        "All API clients failed simultaneously (total, instantaneous failure)",
+        "CPU and database dashboards normal",
+        "RB-002 signature: step function with normal cpu_utilization and db_active_connections",
+        "No evidence of upstream 5xx preceding the failures"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.749,
+      "cost_usd": 0.0149976,
+      "input_tokens": 3298,
+      "output_tokens": 453,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "53dd8cef-8ab2-42c6-b689-a8d736c31e59",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-002#0",
+          "RB-002#1",
+          "RB-002#2",
+          "RB-006#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-002",
+      "tier": "ticket_sufficient",
+      "service": "media-transcode",
+      "predicted": "disk_full",
+      "truth": "disk_full",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "Workers fail with ENOSPC on writes while read-only jobs succeed, which matches the RB-008 disk exhaustion signature (reads work, writes fail). I ruled out the TLS certificate cause because the TLS runbook section has no matching handshake errors. I also ruled out the other causes because nothing points to them, though I have no metrics to confirm usage or check for inode exhaustion.",
+      "evidence_used": [
+        "Error 'ENOSPC: No space left on device' when writing finished renditions",
+        "Jobs that only read input succeed",
+        "RB-008 signature: writes fail with ENOSPC while reads continue to work"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.808,
+      "cost_usd": 0.010365899999999999,
+      "input_tokens": 3228,
+      "output_tokens": 329,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "ae6a2f39-3455-4d2e-a02f-a286febb1129",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-008#0",
+          "RB-008#1",
+          "RB-008#2",
+          "RB-002#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-003",
+      "tier": "ticket_sufficient",
+      "service": "search-indexer",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "Pods are OOMKilled with exit code 137 about every 40 minutes. Memory climbs steadily from start to kill while request volume is flat. That matches the RB-004 leak signature (a sawtooth with a flat request_rate). I ruled out a load-driven memory rise because traffic is flat. I ruled out cache stampede, connection pool exhaustion, slow query and upstream outage because there is no evidence of cache-hit drops, DB connection saturation, query-time rises or upstream 5xx, and the symptom is OOM restarts rather than latency.",
+      "evidence_used": [
+        "Termination reason OOMKilled with exit code 137",
+        "Restarts roughly every 40 minutes, a periodic sawtooth",
+        "Memory climbs steadily from start to kill",
+        "Request volume flat all week, which excludes load-driven growth per RB-004"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.864,
+      "cost_usd": 0.012459699999999999,
+      "input_tokens": 3546,
+      "output_tokens": 408,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "61d319fc-0b3e-4aee-945d-b39d16c7978c",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-004#0",
+          "RB-007#0",
+          "RB-001#3",
+          "RB-001#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-004",
+      "tier": "ticket_sufficient",
+      "service": "checkout-api",
+      "predicted": "bad_deploy_regression",
+      "truth": "bad_deploy_regression",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "The error rate stepped from 0.4% to 19% within one scrape interval, and the ticket says this matches the v2.8.1 deploy. Traffic, memory and database metrics are flat, which fits RB-005's signature of new code that is wrong on a system that isn't under stress. I ruled out a memory leak (memory is flat), an upstream outage (no upstream_5xx evidence, and no ramp preceding the step), and TLS expiry (the step is only 19%, not near 100%, and there are no certificate errors). One caveat: the ticket gives the deploy as 14:05, but the ticket opened at 08:00Z and the metric window ends at 08:55Z. That is probably a timezone or typo problem, but I could not check the deploy log, so I lowered my confidence.",
+      "evidence_used": [
+        "Error rate stepped from 0.4% to 19% in a single scrape interval",
+        "The ticket says onset matches the v2.8.1 deploy",
+        "Traffic, memory and database metrics are unchanged",
+        "RB-005 describes this signature as a deploy regression",
+        "No TLS, certificate, or upstream_5xx evidence",
+        "Deploy time of 14:05 is inconsistent with the ticket's 08:00Z open time and metric window, so it is unverified"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 10.21,
+      "cost_usd": 0.0235907,
+      "input_tokens": 7501,
+      "output_tokens": 1247,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "session_id": "e7da33c7-b32c-4727-a083-0cb2531108ae",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-005#0",
+          "RB-002#0",
+          "RB-004#1",
+          "RB-006#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-005",
+      "tier": "ticket_sufficient",
+      "service": "payments-worker",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.6,
+      "reasoning": "Queue depth is 1.2M and lag is 47 minutes and rising, with no errors, which matches the RB-009 signature. The producer rate is unchanged, so this is a consumer slowdown and not a producer surge. I ruled out connection pool exhaustion, slow queries and a bad deploy because the ticket has no evidence for any of them (no pool metrics, query latency or deploy timestamp). The specific reason the consumer slowed is not identified, but queue_consumer_lag fits the evidence best.",
+      "evidence_used": [
+        "Queue depth 1.2M and consumer lag 47 minutes and climbing",
+        "Messages process without errors, just slowly",
+        "Producer rate unchanged",
+        "RB-009 signature: delay without failure, with flat error rate"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.827,
+      "cost_usd": 0.0111567,
+      "input_tokens": 3257,
+      "output_tokens": 379,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "7cce5e73-bbba-499c-bbe9-0314082bd4b1",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-009#0",
+          "RB-009#1",
+          "RB-009#2",
+          "RB-003#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-006",
+      "tier": "ticket_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "rate_limit_throttling",
+      "truth": "rate_limit_throttling",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The provider returns HTTP 429 with Retry-After on about a third of sends, with no 5xx responses. That matches the runbook's throttling signature, where upstream_4xx_rate carries the signal and upstream_5xx_rate stays flat. It began right after send concurrency was raised, so our own request rate is the likely trigger. I ruled out upstream_dependency_outage because there are no server errors. I ruled out resource_quota_exceeded because there is no explicit quota error naming a limit, and the throttling is tied to request rate rather than a provisioned resource. DNS is ruled out because requests connect and get responses. A bad deploy or config change is less likely because the trigger is the concurrency increase, which maps onto crossing a quota.",
+      "evidence_used": [
+        "HTTP 429 with Retry-After on ~1/3 of sends",
+        "No 5xx responses",
+        "Started after send concurrency was increased",
+        "RB-006#2: throttling begins when request_rate crosses the quota; upstream_5xx_rate stays flat",
+        "No quota-exceeded/RESOURCE_EXHAUSTED error or NXDOMAIN errors reported"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.458,
+      "cost_usd": 0.0126283,
+      "input_tokens": 3331,
+      "output_tokens": 506,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "80fb0ccb-26a9-4e81-a2ef-c64c7bd5552c",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-006#2",
+          "RB-006#3",
+          "RB-010#3",
+          "RB-010#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-007",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "dns_misconfiguration",
+      "truth": "dns_misconfiguration",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.95,
+      "reasoning": "NXDOMAIN occurs at connection time, and the same host works when addressed by IP. That contrast is the diagnostic in RB-010#2. Every caller is affected regardless of host, which rules out clock skew, because skew is per host and produces token rejection rather than NXDOMAIN. TLS expiry would show handshake or certificate errors, not name resolution failures. A cache stampede has no link to NXDOMAIN. An upstream outage would return server errors, not failed resolution.",
+      "evidence_used": [
+        "Connections to the token service fail immediately with NXDOMAIN",
+        "Addressing the same host by IP works fine",
+        "Every caller is affected regardless of which host serves the request",
+        "RB-010#2: NXDOMAIN at connection time with a healthy dependency reachable by IP is the DNS diagnostic"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 6.879,
+      "cost_usd": 0.012950399999999999,
+      "input_tokens": 3651,
+      "output_tokens": 398,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "6850ae18-f57a-4f66-b387-f51edee23b87",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-010#1",
+          "RB-010#2",
+          "RB-007#0",
+          "RB-002#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-008",
+      "tier": "ticket_sufficient",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "The error 'RESOURCE_EXHAUSTED: quota exceeded for provisioned capacity units' names the limit directly, and reducing the write rate did not help. That matches the runbook signature for a provisioned-resource quota, which doesn't recover when load drops. I ruled out rate_limit_throttling because that would be a 429 and would recover when the rate fell. I ruled out disk_full because there is no ENOSPC. I ruled out upstream_dependency_outage because there are no 5xx errors, only an explicit quota error.",
+      "evidence_used": [
+        "Error message: RESOURCE_EXHAUSTED quota exceeded for provisioned capacity units",
+        "Reducing write rate made no difference",
+        "RB-010#3: explicit quota error that does not recover when request rate drops",
+        "No ENOSPC or disk evidence",
+        "No 429 or published rate quota mentioned"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.239,
+      "cost_usd": 0.011969,
+      "input_tokens": 3397,
+      "output_tokens": 420,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "35907299-b7f0-49d7-a9dc-ec5c65f4cb1a",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-010#3",
+          "RB-008#0",
+          "RB-006#1",
+          "RB-008#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-009",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "The pattern is periodic (about every 30 minutes, which fits a TTL boundary), and the backing service's CPU and latency spike briefly and then recover without intervention. The cache tier reports healthy and its own latency stays flat, which matches the runbook's stampede signature of trouble at the origin and not in the cache. I ruled out an upstream outage because this service's own symptoms come in periodic bursts and are not a sustained failure. I ruled out pool exhaustion and a slow query because they don't recover on their own at regular intervals. I ruled out a cold start because it happens once and doesn't recur. The ticket doesn't give cache_hit_ratio or origin_request_rate directly, so this is inferred from the periodicity and the flat cache latency.",
+      "evidence_used": [
+        "CPU spikes on the backing service every ~30 minutes for about a minute, then self-recovers",
+        "Cache tier reports healthy and its latency is flat throughout",
+        "RB-007: a stampede is periodic on the key TTL boundary, and latency rises at the origin while cache_latency_p99 stays flat",
+        "RB-007: a cold start is a one-off, so it doesn't fit a recurring pattern",
+        "RB-006 and RB-001: upstream outage and pool or slow-query causes don't produce regular self-recovering spikes"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.263,
+      "cost_usd": 0.014011000000000001,
+      "input_tokens": 3561,
+      "output_tokens": 557,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "5c610c09-ab2d-453f-a2f5-dbe7829eaf56",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-007#0",
+          "RB-006#1",
+          "RB-001#1",
+          "RB-001#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-010",
+      "tier": "runbook_sufficient",
+      "service": "session-store",
+      "predicted": "clock_skew_auth_failure",
+      "truth": "clock_skew_auth_failure",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "The error 'token used before issued' (nbf check) hits about a third of validations, and the same token succeeds when retried on a different host. That is per-host failure, which the runbook calls close to conclusive for clock skew. The issuer is healthy. I ruled out DNS misconfiguration, because it would hit all hosts at once and show connection-time errors. I ruled out TLS expiry and disk full, because neither matches the symptoms. No clock_offset_ms metric was provided, so confidence is slightly below certain.",
+      "evidence_used": [
+        "Error message 'token used before issued' (nbf validation)",
+        "About one third of validations fail; retry on a different host succeeds",
+        "Issuing service reports no problems",
+        "RB-010#1: partial failure correlated with host is close to conclusive for clock skew",
+        "RB-010#2: DNS failures affect all hosts regardless of which host is asking"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.961,
+      "cost_usd": 0.012325,
+      "input_tokens": 3460,
+      "output_tokens": 417,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "7dcea9ee-7c99-464d-aab3-b230b21cfa15",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-010#1",
+          "RB-002#2",
+          "RB-008#0",
+          "RB-010#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-011",
+      "tier": "runbook_sufficient",
+      "service": "report-builder",
+      "predicted": "db_slow_query_missing_index",
+      "truth": "db_slow_query_missing_index",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.6,
+      "reasoning": "Report generation time grows with data volume (row count) rather than traffic, with no deploys, which fits a query degrading as the table grows, typically because of a missing or unused index. I ruled out pool exhaustion, cache stampede, memory leak and rate limiting: the runbook signatures for those (pool at max, periodic hit-ratio drops, OOMKilled sawtooth, 429s) have no supporting evidence. I also ruled out a bad deploy and config drift, since nothing changed. The retrieved runbooks contain no slow-query section, so this rests on the row-count correlation alone.",
+      "evidence_used": [
+        "Runtime grew from 4 to 26 minutes over about two weeks",
+        "Slowdown tracks row count, not traffic, which is flat",
+        "No deploys in the period",
+        "No evidence of pool saturation, OOM restarts, 429s, or periodic cache misses"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.085,
+      "cost_usd": 0.0122092,
+      "input_tokens": 3456,
+      "output_tokens": 420,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "74729e33-34d5-4fb9-a9c0-657df150cfa1",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-003#1",
+          "RB-007#0",
+          "RB-004#0",
+          "RB-006#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-012",
+      "tier": "runbook_sufficient",
+      "service": "ledger-sync",
+      "predicted": "disk_full",
+      "truth": "disk_full",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.6,
+      "reasoning": "Writes fail while reads and the read-only health check stay green. This is the specific signature in RB-008 for a full volume. The other retrieved runbooks (slow query index, expired TLS) describe latency or handshake failures, not a write-only failure, so I ruled them out. I can't see ENOSPC logs or disk_used_percent, so confidence is moderate. resource_quota_exceeded is the closest alternative.",
+      "evidence_used": [
+        "Ledger writes failing while reads work normally",
+        "Health endpoint returns 200 and only performs a read",
+        "RB-008 states reads keep working and read-only health checks pass while writes fail with ENOSPC",
+        "No latency, handshake or TLS symptoms reported, which argues against the RB-001 and RB-002 causes"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.838,
+      "cost_usd": 0.0137746,
+      "input_tokens": 3260,
+      "output_tokens": 657,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "662a2dca-32ae-452e-952d-9e8ac0c4918b",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-008#0",
+          "RB-001#2",
+          "RB-002#1",
+          "RB-002#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-013",
+      "tier": "runbook_sufficient",
+      "service": "media-transcode",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "Memory climbs monotonically in a fixed-period sawtooth, with a restart at each peak, while job volume stays flat and does not fall when overnight traffic drops. That matches the RB-004 leak signature and rules out a load-driven rise. I ruled out connection_pool_exhaustion because nothing points to DB connection queuing. I ruled out bad_deploy_regression because no deploy timestamp or inflection is given. The ticket doesn't confirm OOMKilled or exit code 137, so confidence is slightly reduced.",
+      "evidence_used": [
+        "Worker memory climbs steadily to the limit, the process dies, and it restarts on a fixed period",
+        "Job volume is flat and did not fall overnight when traffic fell",
+        "RB-004 signature: sawtooth with restarts, climb while request rate is flat",
+        "No deploy inflection or DB pool evidence in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.532,
+      "cost_usd": 0.011148,
+      "input_tokens": 3197,
+      "output_tokens": 420,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "5af016b8-5f08-4809-9228-c67bf10635b5",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-004#0",
+          "RB-004#2",
+          "RB-004#1",
+          "RB-003#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-014",
+      "tier": "runbook_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "config_drift_feature_flag",
+      "truth": "config_drift_feature_flag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "Behaviour changed sharply at 09:20 in a single interval with no deploy for six days and no infrastructure change, which matches the runbook signature for feature-flag/config drift. Bad deploy regression is ruled out because there is no deploy to align with. DB index, TLS expiry and other load or stress causes don't fit, because this is a behavioural change (digest to per-event sends) rather than errors, latency or resource symptoms. The flag audit log wasn't available, so confidence is not maximal.",
+      "evidence_used": [
+        "Batching switched from hourly digests to per-event sends at 09:20 in one interval",
+        "No deploy to the service in six days",
+        "No infrastructure change in the window",
+        "RB-005#1: step change with no deploy, infra event or traffic change is the config drift signature"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.734,
+      "cost_usd": 0.011987099999999999,
+      "input_tokens": 3487,
+      "output_tokens": 385,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "aace43f6-5fd4-40c0-bc52-64eb2c3be83f",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-005#1",
+          "RB-005#0",
+          "RB-001#2",
+          "RB-002#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-015",
+      "tier": "runbook_sufficient",
+      "service": "payments-worker",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "Errors began a few minutes after the provider started returning server errors, which matches the runbook's causal ordering for an upstream outage: upstream 5xx first, then our error rate. CPU, memory and connection counts stayed normal, so the service is healthy and waiting. I ruled out connection pool exhaustion and memory leak because those metrics are normal. I ruled out rate limiting and quota because the provider is returning 5xx, not 429 or quota errors. A bad deploy and a slow query are not supported because there is no deploy timestamp and no DB query evidence.",
+      "evidence_used": [
+        "Settlement errors began minutes after the provider started returning server errors",
+        "CPU, memory and connection counts normal throughout",
+        "RB-006: upstream_5xx_rate rises before own error_rate while own resources stay normal",
+        "No 429 or quota-exceeded errors mentioned"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.636,
+      "cost_usd": 0.0114398,
+      "input_tokens": 3283,
+      "output_tokens": 414,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "408a313d-c194-4d36-86b6-921423b46ada",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-006#1",
+          "RB-001#2",
+          "RB-010#3",
+          "RB-004#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-016",
+      "tier": "runbook_sufficient",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "expired_tls_certificate",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.5,
+      "reasoning": "The ticket shows a step-function failure: errors went from zero to nearly 100% in one scrape interval, with steady load and unremarkable resources. That rules out connection pool exhaustion, disk full, memory leak, queue lag and stampede, which all ramp or show resource pressure. It does not separate an expired TLS certificate from a bad deploy, config drift or a DNS failure, because each of those also produces an instant total failure. The ticket gives no certificate verify or x509 errors, no tls_handshake_failures metric, no certificate notAfter date, no deploy timestamp, and no resolution errors. Picking TLS expiry would be a guess based on shape alone.",
+      "evidence_used": [
+        "Errors went from zero to essentially all requests failing within a single scrape interval, with no ramp",
+        "Load was steady and resource usage was unremarkable, which argues against pool exhaustion, disk full, memory leak and queue lag",
+        "RB-002 says expiry is a step function, but the ticket has no handshake-failure metric or certificate error text to confirm it",
+        "RB-005 says a deploy regression would line up with a deploy timestamp, and no deploy log is provided",
+        "No DNS resolution errors or config change records are present, so those cannot be ruled in or out"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 10.191,
+      "cost_usd": 0.0237963,
+      "input_tokens": 7629,
+      "output_tokens": 1249,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "session_id": "b368d207-68a0-4933-b359-39a6b42f4d6c",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-002#0",
+          "RB-008#0",
+          "RB-003#1",
+          "RB-005#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-017",
+      "tier": "runbook_sufficient",
+      "service": "search-indexer",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.6,
+      "reasoning": "Write volume is flat while the backlog grows steadily, and two of six indexer replicas are crash-looping. RB-009 says this pattern means the consumers slowed down, not that producers got busier. I ruled out disk_full because there is no ENOSPC or disk evidence. I ruled out a slow query or missing index because there are no DB query-time symptoms. I can't tell why the replicas are crash-looping (OOM, a bad deploy, or something else) because no memory, deploy, or log evidence was provided. The observable failure is still consumer capacity falling behind.",
+      "evidence_used": [
+        "Documents take over an hour to become searchable and the backlog is growing steadily",
+        "Write volume into the system is unchanged",
+        "Two of six indexer replicas are crash-looping",
+        "RB-009: flat request_rate with rising queue_depth means the consumer slowed down, including crash-looping replicas"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.465,
+      "cost_usd": 0.0117411,
+      "input_tokens": 3344,
+      "output_tokens": 419,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "8722e990-d4b9-4a0b-b363-dcfdea091043",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-008#0",
+          "RB-009#1",
+          "RB-008#2",
+          "RB-001#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-018",
+      "tier": "runbook_sufficient",
+      "service": "inventory-cache",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.9,
+      "reasoning": "The origin sees bursts of identical concurrent requests at a fixed interval, always for the same small set of popular keys, and each burst clears within two minutes without intervention. That matches the runbook's stampede signature: periodic on the key TTL boundary and self-recovering. A cold start is ruled out because it happens once and does not recur. A bad deploy is ruled out because the pattern is periodic and self-resolving, with no step change. Disk full is ruled out because nothing points to ENOSPC. Rate limiting and an upstream outage are ruled out because there are no 429s or server errors, only bursts of identical requests on hot keys.",
+      "evidence_used": [
+        "Bursts of identical concurrent requests hit the origin at a fixed interval",
+        "Always the same small set of popular keys",
+        "Bursts subside within two minutes without intervention",
+        "RB-007 describes stampedes as periodic on the key TTL boundary and self-recovering, unlike a one-off cold start"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.182,
+      "cost_usd": 0.0122431,
+      "input_tokens": 3418,
+      "output_tokens": 439,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "b4ddef0b-ed3f-4ebe-9630-3ae2192fa630",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-007#0",
+          "RB-007#1",
+          "RB-008#1",
+          "RB-005#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-019",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "connection_pool_exhaustion",
+      "truth": "connection_pool_exhaustion",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "Logs show 'pool exhausted' and 'could not obtain a connection within 30s' while the database reports normal query execution times, which matches the RB-003 signature of requests queuing for connections with flat query time. I ruled out db_slow_query_missing_index because query time is normal. I ruled out expired_tls_certificate because there are no certificate errors. The trigger within the pool (leak, traffic, or long transaction) isn't identified, but the cause category is clear.",
+      "evidence_used": [
+        "Logs: 'TimeoutError: pool exhausted'",
+        "Logs: 'could not obtain a connection within 30s'",
+        "Database reports normal query execution times",
+        "RB-003 signature: flat ceiling with query time near baseline",
+        "No TLS verification errors in the description"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.757,
+      "cost_usd": 0.0114547,
+      "input_tokens": 3367,
+      "output_tokens": 381,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "6ef0bd54-88c9-4e24-b727-95b5589ddc21",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-003#0",
+          "RB-003#1",
+          "RB-003#2",
+          "RB-002#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-020",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "unknown",
+      "truth": "connection_pool_exhaustion",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only gives symptoms: p99 up, errors up, timeouts, no deploy. The runbook separates pool exhaustion, slow query and upstream outage by specific metrics (db_active_connections, db_query_time_p99, upstream_5xx_rate and their ordering), and none of those values are provided. No deploy rules out a bad deploy regression, but the three metric-separated causes can't be told apart. Picking one would be a guess.",
+      "evidence_used": [
+        "Ticket: p99 went from ~300ms to several seconds, error rate up, timeouts only in logs",
+        "Ticket: no deploy today",
+        "Runbook RB-001/RB-003/RB-006 require db_active_connections, db_query_time_p99 and upstream_5xx_rate, none of which are in the evidence",
+        "Logs show only generic timeouts, not 'pool exhausted' messages"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.295,
+      "cost_usd": 0.012220600000000002,
+      "input_tokens": 3472,
+      "output_tokens": 409,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "61e8197f-964b-4244-bf37-adb006d32a78",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-001#3",
+          "RB-003#0",
+          "RB-006#1",
+          "RB-001#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-021",
+      "tier": "evidence_required",
+      "service": "report-builder",
+      "predicted": "unknown",
+      "truth": "db_slow_query_missing_index",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket gives only symptoms (gradual latency degradation, timeouts, no deploy today) and no metric values. The runbook's distinguishing signals (db_active_connections, db_query_time_p99, upstream_5xx_rate ordering, memory sawtooth) are not available to me. I ruled out a bad deploy because none went out today. I can't separate pool exhaustion, slow query, upstream outage, a leak or config drift without those series.",
+      "evidence_used": [
+        "Ticket: latency degraded gradually through the afternoon, with some caller timeouts",
+        "No release went out today",
+        "The team is unsure whether the cause is internal or a dependency",
+        "No metric values were provided (db_active_connections, db_query_time_p99, upstream_5xx_rate, memory_utilization)",
+        "RB-001 says the cause can only be chosen by walking the metric table in order"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.93,
+      "cost_usd": 0.0121323,
+      "input_tokens": 3474,
+      "output_tokens": 405,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "6cd80ca8-400d-4127-a227-8aa939754472",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-001#1",
+          "RB-004#1",
+          "RB-005#1",
+          "RB-004#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-022",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket gives only symptoms (latency and errors elevated, no changes on our side). The runbook says the cause is distinguishable only from metrics (db_active_connections, db_query_time_p99, upstream_5xx_rate ordering), and none of those are provided. Pool exhaustion, slow query and upstream outage all fit equally. \"No changes on our side\" weakly argues against a deploy or config change, but doesn't rule them out. I can't single out one cause.",
+      "evidence_used": [
+        "Ticket: latency and errors both elevated, started ~1h ago, no changes on our side",
+        "On-call cannot tell from the dashboard where time is going",
+        "RB-001: the three candidate causes are distinguishable only by metrics, which are not in the evidence",
+        "No values for db_active_connections, db_query_time_p99 or upstream_5xx_rate and their timing"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.004,
+      "cost_usd": 0.0116002,
+      "input_tokens": 3349,
+      "output_tokens": 403,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "8ea50a91-c9b6-46b8-8bbb-64ea91488ee5",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-001#1",
+          "RB-001#0",
+          "RB-001#3",
+          "RB-006#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-023",
+      "tier": "evidence_required",
+      "service": "ledger-sync",
+      "predicted": "unknown",
+      "truth": "connection_pool_exhaustion",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only reports intermittent slowness and timeouts, with no deploy and no known config change. No metric values are available (db_active_connections, db_query_time_p99, upstream_5xx_rate, memory), and those are what the runbook decision table uses to separate pool exhaustion, slow query and upstream outage. I ruled out nothing by evidence. Bad deploy is unlikely because no deploy is reported. Config drift is unsupported because there is no flag audit data and no sharp step change is described. Memory leak has no restart or memory evidence. Choosing any one cause would be a guess.",
+      "evidence_used": [
+        "Ticket: sync normally under 1s, now slow or timing out intermittently",
+        "Ticket: no deploy and no known config change",
+        "No metric values (db_active_connections, db_query_time_p99, upstream_5xx_rate, memory) were provided",
+        "RB-001 decision table requires those db and upstream series to discriminate between causes"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.388,
+      "cost_usd": 0.0125635,
+      "input_tokens": 3508,
+      "output_tokens": 434,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "afb5a5d5-9658-4637-a6fa-ff88fe9ec8e5",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-005#0",
+          "RB-005#1",
+          "RB-001#1",
+          "RB-004#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-024",
+      "tier": "evidence_required",
+      "service": "search-indexer",
+      "predicted": "unknown",
+      "truth": "db_slow_query_missing_index",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only gives symptoms: lower throughput, higher p99, slightly elevated errors, and no deploys this week. The runbook sections separate the candidate causes by specific metrics, and none of those metrics were provided: db_active_connections, db_query_time_p99 and upstream_5xx_rate. I can't rule out connection pool exhaustion, a slow query, or an upstream outage. \"No deploy\" weakens bad_deploy_regression, but config drift is still possible. Disk full isn't supported either, because there are no ENOSPC errors.",
+      "evidence_used": [
+        "Ticket: throughput down, p99 up, error rate slightly elevated, no deploys this week",
+        "RB-001 decision table needs db_active_connections, db_query_time_p99 and upstream_5xx_rate ordering, and none of these are in the ticket",
+        "No ENOSPC, TLS, DNS or memory-restart evidence in the ticket",
+        "I can't query metrics, so I can't check the metric window"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.009,
+      "cost_usd": 0.0126417,
+      "input_tokens": 3467,
+      "output_tokens": 448,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "cb2249ca-22ca-4bc1-860b-2e50e8a96982",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-006#1",
+          "RB-001#2",
+          "RB-008#1",
+          "RB-001#1"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-025",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only says a subset of customers fail and latency is up, with no metrics, logs or error details. The last deploy was three days ago, so a deploy regression is not supported by timing. Nothing points to a cert expiry, a slow query (no db_query_time data), or any other specific cause. The runbooks say these causes can only be told apart by metrics, which I don't have.",
+      "evidence_used": [
+        "Ticket: subset of customers failing, latency up, not reproducible in staging",
+        "Last deploy was three days ago, so there is no alignment with a deploy timestamp (RB-005)",
+        "No metrics, logs or error signatures are included in the evidence",
+        "RB-001 states the ticket text alone cannot distinguish the latency causes",
+        "RB-001#2 index signature needs a climbing db_query_time_p99, which is not shown"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.948,
+      "cost_usd": 0.011045200000000002,
+      "input_tokens": 3243,
+      "output_tokens": 391,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "ee6b1dc3-4638-49a4-a199-8fc38d44efeb",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-002#2",
+          "RB-005#0",
+          "RB-001#0",
+          "RB-001#2"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-026",
+      "tier": "evidence_required",
+      "service": "notify-dispatch",
+      "predicted": "unknown",
+      "truth": "rate_limit_throttling",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket says only that a large share of sends fail at the provider and the status page shows no incident. It gives no status codes, error strings, quota_used_percent, or correlation with request volume, and no metrics were retrievable. That rules out none of the candidates. Quota exceeded needs an explicit quota error with quota_used_percent at 100%. Rate limiting needs 429s. An upstream outage needs 5xx responses. Disk, TLS, and the other causes have no supporting evidence either. The runbook sections describe signatures but nothing in the incident matches one.",
+      "evidence_used": [
+        "Ticket: large share of sends failing at the downstream provider",
+        "Provider status page shows no incident",
+        "No status codes, error messages, quota_used_percent, or request-volume correlation provided",
+        "Runbook RB-010#3 and RB-006#0 require specific discriminators (explicit quota error, 429 vs 5xx) that are absent"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.399,
+      "cost_usd": 0.011416199999999998,
+      "input_tokens": 3250,
+      "output_tokens": 425,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "f174f204-a605-4a5a-9e26-f7be1811bad9",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-010#3",
+          "RB-006#0",
+          "RB-002#2",
+          "RB-008#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-027",
+      "tier": "evidence_required",
+      "service": "payments-worker",
+      "predicted": "unknown",
+      "truth": "upstream_dependency_outage",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket says only that authorisation calls to the processor are failing in volume. It gives no error codes, metrics, or deploy and config history. An upstream_dependency_outage is plausible, but the processor has not confirmed anything. I can't rule out rate_limit_throttling (429s), expired_tls_certificate, dns_misconfiguration, or a bad deploy. The retrieved runbook sections cover disk-full, TLS expiry and latency triage. None of them has evidence that applies to this incident.",
+      "evidence_used": [
+        "Authorisation calls to the processor failing in volume",
+        "Processor has posted no public status and the account manager is unreachable, so there is no confirmation of an outage",
+        "No status codes, error strings, metrics, or deploy and config timeline in the ticket",
+        "Retrieved runbook sections (disk, TLS expiry, latency triage) have no matching signature evidence"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.081,
+      "cost_usd": 0.0113271,
+      "input_tokens": 3258,
+      "output_tokens": 413,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "f3bcee7c-4558-4d3d-82b1-8f89ad291bfc",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-008#0",
+          "RB-002#2",
+          "RB-008#1",
+          "RB-001#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-028",
+      "tier": "evidence_required",
+      "service": "session-store",
+      "predicted": "unknown",
+      "truth": "clock_skew_auth_failure",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.4,
+      "reasoning": "The symptoms (intermittent auth failures, IdP healthy) fit clock skew, but the decisive evidence is missing. There is no per-host breakdown of auth_failure_rate, no clock_offset_ms, and no error text such as 'token used before issued' or 'token is expired'. DNS is unlikely because it would hit everything using the name at once and show NXDOMAIN or SERVFAIL. Quota is unlikely because there is no quota error and no quota_used_percent at 100%. Clock skew is the leading hypothesis but is not confirmed.",
+      "evidence_used": [
+        "Failures are intermittent, not total",
+        "Identity provider reports healthy",
+        "No error text, per-host data or clock_offset_ms in the ticket",
+        "No DNS resolution errors or quota errors reported"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 3.797,
+      "cost_usd": 0.011554799999999999,
+      "input_tokens": 3370,
+      "output_tokens": 382,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "aa26c371-72f5-4792-8879-5619e0e1c813",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-010#2",
+          "RB-010#1",
+          "RB-010#3",
+          "RB-010#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-029",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "unknown",
+      "truth": "dns_misconfiguration",
+      "correct": false,
+      "abstained": true,
+      "confidence": 0.6,
+      "reasoning": "The ticket only says authentication is failing broadly and the team is split between network, certificate and identity provider. It has no error text, no metrics, no affected-host pattern and no deploy or change timestamps. The runbook sections are generic: the TLS section gives remediation only, the quota section gives signatures that aren't observed here, and the overview says the causes are separated by error text and affected hosts, which I don't have. I can't rule out expired TLS certificate, clock skew, DNS misconfiguration, quota exceeded or an upstream IdP outage, and nothing singles one of them out.",
+      "evidence_used": [
+        "Ticket: authentication failing across the board, no error text given",
+        "Team is split between network, certificate and identity provider causes",
+        "RB-010#0: the causes are separated by error text and affected hosts, neither of which is provided",
+        "RB-010#3 quota signatures (RESOURCE_EXHAUSTED, quota_used_percent at 100%) are not shown in the incident",
+        "RB-002#2 describes remediation only, with no expiry evidence in the incident"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 4.023,
+      "cost_usd": 0.0113867,
+      "input_tokens": 3114,
+      "output_tokens": 468,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "b012d375-d386-4282-a3d8-1b2c91583aed",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-002#2",
+          "RB-009#2",
+          "RB-010#3",
+          "RB-010#0"
+        ]
+      }
+    },
+    {
+      "arm": "rag",
+      "incident_id": "INC-030",
+      "tier": "evidence_required",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.55,
+      "reasoning": "The storage provider is rejecting writes, and cutting our write rate did not help. That fits a provisioned-resource limit, which doesn't recover when request rate drops (RB-010#3). It doesn't fit rate throttling, which would ease with a lower rate. I ruled out disk_full because no ENOSPC or local volume signal is reported and the rejection comes from the provider. I ruled out a deploy regression and config drift because no deploys happened and there is no flag evidence. Clock skew doesn't apply because these are write rejections, not auth failures. The ticket doesn't quote the provider's quota error or `quota_used_percent`, so confidence is moderate.",
+      "evidence_used": [
+        "Storage provider is rejecting a large share of writes",
+        "Reducing write rate did not obviously help, so the limit is not rate-based",
+        "No deploys today",
+        "RB-010#3: quota limits do not recover when request rate drops",
+        "No ENOSPC or disk_used_percent evidence in the ticket"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 5.243,
+      "cost_usd": 0.014409199999999999,
+      "input_tokens": 3520,
+      "output_tokens": 604,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "session_id": "395d6d68-63a4-4120-95ab-2a0af1231feb",
+        "stop_reason": "tool_use",
+        "subtype": "success",
+        "retrieved": [
+          "RB-008#0",
+          "RB-010#3",
+          "RB-010#1",
+          "RB-005#1"
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-001",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "expired_tls_certificate",
+      "truth": "expired_tls_certificate",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "Client logs show 'x509: certificate has expired or is not yet valid'. Metrics show tls_handshake_failures equal to the full request rate (about 807 per interval) and error_rate near 99%. Every other signal is at baseline, so the failure is isolated to the TLS layer. Ruled out: clock_skew_auth_failure (clock_offset_ms is about 14 ms, normal, and auth_failure_rate is flat). dns_misconfiguration (dns_resolution_failures is 0). upstream_dependency_outage (upstream 5xx is flat). connection_pool_exhaustion and db_slow_query_missing_index (db connections and query time are normal). memory_leak_oom (restart_count is 0 and memory is flat). disk_full (disk is about 54%). rate_limit_throttling and resource_quota_exceeded (quota use is about 60% and 4xx is flat). queue_consumer_lag (lag is normal). cache_stampede (cache hit ratio is normal). bad_deploy_regression and config_drift_feature_flag would not produce an x509 expiry error. I did not check the deploy timeline or the certificate notAfter date directly.",
+      "evidence_used": [
+        "Client error: x509 certificate has expired or is not yet valid",
+        "tls_handshake_failures incident_avg 806.684, equal to request_rate",
+        "error_rate incident_avg 99.2%",
+        "clock_offset_ms about 14 ms, normal",
+        "dns_resolution_failures 0",
+        "upstream_5xx_rate, db metrics, memory, disk, quota and cache metrics at baseline"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.531,
+      "cost_usd": 0.050735,
+      "input_tokens": 20987,
+      "output_tokens": 2147,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "auth-gateway",
+              "window_start": "2026-03-02T06:00:00Z",
+              "window_end": "2026-03-02T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2824
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-002",
+      "tier": "ticket_sufficient",
+      "service": "media-transcode",
+      "predicted": "disk_full",
+      "truth": "disk_full",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "Workers log ENOSPC when writing output, and jobs that only read succeed, so the failures are write-only. disk_used_percent averaged 97.6% during the incident, up from a 79% baseline, and peaked at 100%. Ruled out: resource_quota_exceeded, because quota_used_percent stayed at 54-68% and never neared a limit. memory_leak_oom, because memory was flat (about 46%) and restart_count was 0. connection_pool_exhaustion and db_slow_query_missing_index, because db_active_connections and db_query_time_p99_ms were at baseline. upstream_dependency_outage and rate_limit_throttling, because upstream 5xx and 4xx rates were flat. bad_deploy_regression and config_drift_feature_flag, because nothing in the evidence points to a deploy or config change, and the error signature is specific to ENOSPC. dns_misconfiguration, expired_tls_certificate and clock_skew_auth_failure, because DNS failures and TLS handshake failures were 0 and clock offset and auth failures were normal. queue_consumer_lag and cache_stampede, because consumer lag, cache hit ratio and queue depth were near baseline.",
+      "evidence_used": [
+        "Error message: ENOSPC: No space left on device on output writes",
+        "Read-only jobs succeed",
+        "disk_used_percent incident_avg 97.6, peak 100.0, baseline 79.1",
+        "quota_used_percent peak 68%",
+        "memory_utilization flat and restart_count 0",
+        "db, upstream, DNS, TLS and clock metrics all at baseline"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 13.929,
+      "cost_usd": 0.043869,
+      "input_tokens": 16904,
+      "output_tokens": 1941,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "media-transcode",
+              "window_start": "2026-03-02T10:00:00Z",
+              "window_end": "2026-03-02T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2815
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-003",
+      "tier": "ticket_sufficient",
+      "service": "search-indexer",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The ticket reports OOMKilled with exit code 137 about every 40 minutes. Memory climbs steadily from process start until the kill, then the cycle repeats. The metrics agree. memory_utilization ranges from 43% to a peak of 93.7%, which looks like a sawtooth. restart_count averages 0.83 per interval during the incident and is 0 at baseline. Load is flat: request_rate is about 812 against a baseline of about 823, so this is not a traffic surge. I ruled out the following causes. connection_pool_exhaustion and db_slow_query_missing_index are unlikely because db_active_connections (peak 51) and db_query_time_p99 (about 27 ms) are unchanged. queue_consumer_lag is unlikely because consumer_lag_seconds and queue_depth are normal or lower. disk_full is unlikely because disk usage is about 54%. resource_quota_exceeded and rate_limit_throttling are unlikely because quota_used_percent is about 61% and upstream_4xx_rate is flat. upstream_dependency_outage is unlikely because upstream_5xx_rate is flat. cache_stampede is unlikely because cache_hit_ratio is about 0.94 and origin_request_rate is stable. expired_tls_certificate, dns_misconfiguration and clock_skew_auth_failure are unlikely because tls_handshake_failures and dns_resolution_failures are 0 and clock_offset_ms is small. bad_deploy_regression is not supported as the primary cause. The only deploy was on 2026-02-26, four days before the incident, and nothing in the evidence ties failures to that timestamp. The cause is a memory leak, and the OOM kill is the visible symptom. I did not check whether the leak came in with the Feb 26 release.",
+      "evidence_used": [
+        "OOMKilled, exit code 137, roughly every 40 minutes",
+        "memory climbs steadily from start to kill",
+        "memory_utilization min 43.4%, peak 93.7%",
+        "restart_count baseline 0, incident avg 0.83",
+        "request_rate flat (812 vs 823)",
+        "db_active_connections, db_query_time_p99_ms, queue and lag, disk, quota, upstream_5xx, dns, tls and clock metrics all normal"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 23.808,
+      "cost_usd": 0.071362,
+      "input_tokens": 27906,
+      "output_tokens": 2944,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "search-indexer",
+              "window_start": "2026-03-02T14:00:00Z",
+              "window_end": "2026-03-02T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2820
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-003"
+            },
+            "error": null,
+            "observation_chars": 1069
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-004",
+      "tier": "ticket_sufficient",
+      "service": "checkout-api",
+      "predicted": "bad_deploy_regression",
+      "truth": "bad_deploy_regression",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "The ticket timeline shows checkout-api v2.8.1 deployed at 07:55Z. The alert fired at 07:56Z. Error rate stepped from about 0.4% to about 19% within one scrape interval, which matches the deploy. The description says 14:05, which conflicts with the 07:55Z timeline. I assume that is a timezone or text inconsistency, because the step still follows the deploy event. I did not pull the error-rate series to confirm the exact onset interval. Every other candidate has no support in the metrics. Database query p99 is about 26 ms against a 29 ms baseline, and active connections are about 35 against a peak of 47, so there is no sign of pool exhaustion or a slow query. Upstream 5xx is about 0.08%, so an upstream outage is unlikely. Upstream 4xx is about 0.19%, so rate limiting is unlikely. Memory is flat and restart_count is 0, so there is no memory leak. Disk is about 55%, so disk is not full. TLS handshake failures and DNS failures are both 0. Clock offset is about 13 ms and auth failures are about 0.3%, so clock skew is ruled out. Cache hit ratio is about 0.95 and origin request rate is flat, so a cache stampede is unlikely. Queue depth and consumer lag are roughly unchanged. Quota use is about 62%, which is not exhausted. A config or feature-flag change without a deploy is possible in principle, but the timeline lists no flag change and the onset lines up with the release. A sharp step at the deploy timestamp with every infrastructure metric normal points to a defect in the release.",
+      "evidence_used": [
+        "Timeline: v2.8.1 deployed 07:55Z, alert 07:56Z",
+        "Error rate baseline 0.44% to incident avg 18.9% (peak 19.08%), a step change",
+        "db_query_time_p99 about 26 ms vs baseline 29 ms; db connections about 35 vs 33",
+        "upstream_5xx about 0.08%, upstream_4xx about 0.19%",
+        "memory flat, restart_count 0, disk about 55%",
+        "tls_handshake_failures 0, dns_resolution_failures 0",
+        "clock_offset about 13 ms, auth_failure_rate about 0.3%",
+        "cache_hit_ratio about 0.95, origin_request_rate flat",
+        "quota_used about 62%, queue depth and consumer lag roughly unchanged"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 23.494,
+      "cost_usd": 0.0741,
+      "input_tokens": 28110,
+      "output_tokens": 3162,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-03T06:00:00Z",
+              "window_end": "2026-03-03T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2821
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-004"
+            },
+            "error": null,
+            "observation_chars": 1043
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-005",
+      "tier": "ticket_sufficient",
+      "service": "payments-worker",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "Queue depth rose from a baseline of about 1.3K to about 126K on average, with a peak of 159K. Consumer lag rose from about 9s to about 1773s on average, with a peak of 2237s. The producer request rate is flat (839 baseline vs 816 during the incident), so the backlog comes from consumers falling behind and not from a producer surge. I ruled out the other candidates using the same metrics. Connection pool exhaustion and a slow query are unlikely: db_active_connections (about 40) and db_query_time_p99 (about 27ms) are normal. A bad deploy is unlikely because error rate and latency are unchanged. Memory leak/OOM is unlikely because restart_count is 0 and memory is flat. Disk full is unlikely because disk is about 54%. Rate limiting and quota are unlikely because upstream_4xx is normal and quota_used is about 60%. Upstream outage is unlikely because upstream_5xx is only slightly raised (0.12 average). TLS, DNS and clock skew are unlikely because TLS and DNS failures are 0 and the clock offset is only tens of ms. Cache stampede is unlikely because cache hit ratio and origin request rate are normal. I did not check the timeline or runbooks, so I can't say why the consumers slowed. The evidence does fit a backlog and lag that grow with no errors and a steady producer rate.",
+      "evidence_used": [
+        "queue_depth incident_avg 126242 vs baseline 1329",
+        "consumer_lag_seconds peak 2237 vs baseline 9",
+        "request_rate flat 816 vs 839",
+        "db_active_connections and db_query_time_p99 normal",
+        "restart_count 0, memory flat",
+        "error_rate and latency unchanged",
+        "disk 54%, quota about 60%, TLS/DNS failures 0",
+        "cache_hit_ratio and origin_request_rate normal"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 11.133,
+      "cost_usd": 0.034576,
+      "input_tokens": 11555,
+      "output_tokens": 1357,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "payments-worker",
+              "window_start": "2026-03-03T10:00:00Z",
+              "window_end": "2026-03-03T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2830
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-006",
+      "tier": "ticket_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "rate_limit_throttling",
+      "truth": "rate_limit_throttling",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The provider is rejecting about a third of sends with 429 and a Retry-After header. Upstream 4xx averages 31% during the incident, against 0.19% at baseline. Request rate rose from about 860 to about 1266 after the concurrency increase, which matches the ticket. Ruled out: upstream_dependency_outage, because upstream 5xx stays near zero (0.155 average, 0.234 peak) and the ticket reports no 5xx at all. resource_quota_exceeded, because quota_used_percent is only about 61% (65% peak) and is not fully consumed. bad_deploy_regression and config_drift_feature_flag, because the trigger was a concurrency increase, not a deploy or flag change, and I found no other evidence for either. connection_pool_exhaustion and db_slow_query_missing_index, because db connections and query time are flat and p99 latency is flat. queue_consumer_lag, because consumer lag is about 8s, below its 9.5s baseline. memory_leak_oom, because restart_count is 0 and memory is flat. dns_misconfiguration, expired_tls_certificate and clock_skew_auth_failure, because DNS failures and TLS handshake failures are 0 and clock offset and auth failures are normal. disk_full, because disk use is about 53%. cache_stampede, because cache hit ratio and origin request rate are unchanged.",
+      "evidence_used": [
+        "upstream_4xx_rate avg 31.2 vs baseline 0.19",
+        "upstream_5xx_rate avg 0.155, peak 0.234",
+        "request_rate rose from 860 to 1266 after the concurrency increase",
+        "quota_used_percent about 61%, not exhausted",
+        "ticket: 429 with Retry-After on about a third of sends, no 5xx",
+        "db, memory, disk, DNS, TLS, restart, clock and auth metrics normal"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 17.212,
+      "cost_usd": 0.048985,
+      "input_tokens": 20858,
+      "output_tokens": 2287,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "notify-dispatch",
+              "window_start": "2026-03-03T14:00:00Z",
+              "window_end": "2026-03-03T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2825
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-007",
+      "tier": "ticket_sufficient",
+      "service": "auth-gateway",
+      "predicted": "dns_misconfiguration",
+      "truth": "dns_misconfiguration",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "The ticket reports NXDOMAIN for the token service hostname, while the same host reached by IP works. The metrics agree: dns_resolution_failures rose from a baseline of 0 to an incident average of 687 (peak 743). Error rate and auth_failure_rate rose in step with it, to about 61% and 48%. I ruled out the other causes. upstream_dependency_outage: upstream_5xx_rate is flat at about 0.09, and the connection works by IP, so the dependency is healthy. expired_tls_certificate: tls_handshake_failures is 0. clock_skew_auth_failure: clock_offset_ms is normal at about 10 ms, and the auth failures follow from the failed lookups rather than from rejected tokens. connection_pool_exhaustion and db_slow_query_missing_index: db_active_connections and db_query_time_p99_ms are unchanged. memory_leak_oom: restart_count is 0 and memory is flat. disk_full: disk usage is about 54%. rate_limit_throttling and resource_quota_exceeded: upstream_4xx_rate is flat and quota_used_percent is about 60%. cache_stampede: cache_hit_ratio and origin_request_rate are normal. queue_consumer_lag: consumer_lag_seconds is normal. bad_deploy_regression and config_drift_feature_flag: nothing points to either, and NXDOMAIN plus the DNS failure metric fit DNS best. I did not check the ticket timeline or the runbooks.",
+      "evidence_used": [
+        "Ticket: NXDOMAIN on the token service hostname, while the same host by IP works",
+        "dns_resolution_failures: baseline 0, incident avg 687, peak 743",
+        "tls_handshake_failures is 0",
+        "upstream_5xx_rate is flat at about 0.09",
+        "clock_offset_ms is normal, about 10 ms",
+        "db_active_connections and db_query_time_p99_ms are unchanged",
+        "restart_count is 0",
+        "disk_used_percent is about 54%",
+        "quota_used_percent is about 60%"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 16.07,
+      "cost_usd": 0.049151,
+      "input_tokens": 16875,
+      "output_tokens": 2238,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "auth-gateway",
+              "window_start": "2026-03-04T06:00:00Z",
+              "window_end": "2026-03-04T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2830
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-008",
+      "tier": "ticket_sufficient",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "quota_used_percent sits at 100% for the whole incident, against a baseline of about 57%. The error text names a provisioned capacity-unit limit. Cutting the write rate did not help, and request rate fell from about 843 to 522 with errors still at about 27, so the limit is not recovering when load drops. That fits resource_quota_exceeded. I ruled out rate_limit_throttling because upstream_4xx is flat (0.17 against a 0.21 baseline), so there are no 429s, and the error is a provisioned-capacity exhaustion, not a published request quota. I ruled out upstream_dependency_outage because upstream_5xx is negligible. disk_full is out because disk is at about 54%. memory_leak_oom is out because memory is about 45% and there are no restarts. connection_pool_exhaustion and db_slow_query_missing_index are out because DB connections (about 30) and query p99 (about 26 ms) are normal. cache_stampede is out because the cache hit ratio is about 0.94 and the origin request rate is normal. bad_deploy_regression and config_drift_feature_flag are not supported because nothing in the evidence points to a deploy or a config change. The other candidates have no supporting signal: TLS handshake failures, DNS failures and clock offset are all near zero, and queue lag is normal. I did not check the ticket timeline or runbooks.",
+      "evidence_used": [
+        "quota_used_percent incident_avg 100 (peak 100) vs baseline 56.6",
+        "error message: RESOURCE_EXHAUSTED quota exceeded for provisioned capacity units",
+        "reducing write rate had no effect; request_rate dropped while error_rate stayed about 27",
+        "upstream_4xx_rate 0.172 (no 429s), upstream_5xx_rate 0.143",
+        "disk 54%, memory 45%, restart_count 0, db_active_connections 30, db_query_time_p99 26ms, cache_hit_ratio 0.94",
+        "tls_handshake_failures 0, dns_resolution_failures 0, clock_offset 10ms"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.95,
+      "cost_usd": 0.046586,
+      "input_tokens": 17092,
+      "output_tokens": 2182,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "inventory-cache",
+              "window_start": "2026-03-04T10:00:00Z",
+              "window_end": "2026-03-04T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2822
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-009",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.82,
+      "reasoning": "The spikes recur on a regular rhythm, which fits a hot key with a fixed TTL expiring over and over. In the metric summary, cache_hit_ratio drops to a minimum of 0.233 against a baseline average of 0.824. At the same time origin_request_rate peaks at 510 against a baseline of 116, about 4x. That means concurrent cache misses are hitting the origin together. CPU peaks at 96% and p99 latency peaks at about 1008 ms, roughly 2.3x the 430 ms baseline average, which matches the ticket's 'latency triples' and 'recovers by itself'. I ruled out the other causes. db_query_time_p99 stays flat (peak 34 ms), so this is not a slow query or missing index. db_active_connections peaks at 46 and does not stay pinned at a maximum, so the pool is not exhausted. restart_count is 0 and memory is stable (peak 52%), so there is no OOM or leak. Disk peaks at 56%. TLS handshake failures and DNS failures are both 0. clock_offset peaks at 28 ms, which is small. quota_used_percent peaks at 69%, below any limit. upstream_5xx is low (peak 0.26). queue_depth and consumer_lag are flat. No deploy or flag change is mentioned, and the incident recovers without intervention. One caveat: the ticket says the cache tier is healthy with flat latency. That is consistent with a stampede, because the cache itself is fine and the load lands on the origin. I did not retrieve the per-timestamp series, so the exact period of the spikes is not confirmed.",
+      "evidence_used": [
+        "cache_hit_ratio min 0.233 vs baseline avg 0.824",
+        "origin_request_rate peak 510 vs baseline 116",
+        "cpu_utilization peak 96% vs avg 48%",
+        "latency_p99 peak 1008ms vs avg 430ms",
+        "db_query_time_p99 flat (peak 34ms)",
+        "restart_count 0, memory peak 52%",
+        "dns/tls failures 0, quota peak 69%, clock_offset peak 28ms",
+        "periodic self-recovering spikes with no deploy or flag change"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_metrics"
+      ],
+      "latency_s": 21.336,
+      "cost_usd": 0.074837,
+      "input_tokens": 30654,
+      "output_tokens": 2772,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-04T14:00:00Z",
+              "window_end": "2026-03-04T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2813
+          },
+          {
+            "n": 2,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-04T14:00:00Z",
+              "window_end": "2026-03-04T16:55:00Z",
+              "series": "cache_hit_ratio,origin_request_rate,cpu_utilization"
+            },
+            "error": null,
+            "observation_chars": 3535
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-010",
+      "tier": "runbook_sufficient",
+      "service": "session-store",
+      "predicted": "clock_skew_auth_failure",
+      "truth": "clock_skew_auth_failure",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "The investigation tools (get_metrics, get_ticket, etc.) were not callable, so this rests on the ticket text alone, with no metrics, runbook or similar-incident evidence. 'Token used before issued' means the token's iat/nbf is later than the verifying host's clock, which indicates a verifier clock running behind. Failures are host-specific: about a third of validations fail, and the same token succeeds when retried on a different host. That points to a few drifted verifier hosts, not a token or issuer defect, and the issuer reports no problems. Ruled out: bad_deploy_regression (failures vary by host, no deploy timestamp cited); config_drift_feature_flag (a config change would affect all hosts alike); upstream_dependency_outage (no server errors, a specific validation rejection); expired_tls_certificate and dns_misconfiguration (connections succeed and tokens are evaluated); connection pool, disk, memory and rate-limit causes (would not yield a timestamp-ordering error that differs by host). Clock-offset metrics were not checked, so confidence is slightly reduced.",
+      "evidence_used": [
+        "Error message 'token used before issued'",
+        "Same token succeeds on a different host when retried",
+        "About a third of validations fail, consistent with a subset of hosts",
+        "Issuing service reports no problems"
+      ],
+      "tool_calls": 0,
+      "tool_call_names": [],
+      "latency_s": 11.175,
+      "cost_usd": 0.025511,
+      "input_tokens": 11014,
+      "output_tokens": 1427,
+      "num_turns": 1,
+      "error": null,
+      "detail": {
+        "steps": []
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-011",
+      "tier": "runbook_sufficient",
+      "service": "report-builder",
+      "predicted": "db_slow_query_missing_index",
+      "truth": "db_slow_query_missing_index",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "The slowdown tracks row count rather than traffic, and it built up gradually over two weeks with no deploys. That fits a query that degrades as the table grows, such as a missing or unused index. DB query time p99 rose from about 28 ms to about 527 ms (peak 768 ms), and request latency p99 rose in step. I did not retrieve the db_active_connections time series, so I haven't seen whether connections plateau at a pool maximum. Connections are only moderately higher (average 32 to 45, peak 55), which is consistent with slow queries holding connections longer. Ruled out: bad_deploy_regression (no deploys, gradual onset), connection_pool_exhaustion (the cause is query time, and I haven't seen the pool at a maximum), upstream_dependency_outage (upstream 5xx is flat at about 0.09), cache_stampede (cache hit ratio is flat at 0.94 and origin request rate is flat), memory_leak_oom (no restarts, memory only slightly higher), disk_full (disk about 54%), queue_consumer_lag (consumer lag is flat at about 9.8 s), rate_limit_throttling and resource_quota_exceeded (quota use is flat at about 60%), and the DNS, TLS and clock-skew causes (those metrics are at or near zero or baseline). The low confidence reflects the missing connection time series and the lack of direct query or index evidence.",
+      "evidence_used": [
+        "db_query_time_p99_ms baseline 28.4 -> incident 526.6, peak 767.8",
+        "latency_p99_ms baseline 317 -> 1781",
+        "request_rate flat (843 -> 806) while the slowdown tracks row count",
+        "No deploys in the period; gradual two-week degradation",
+        "upstream_5xx_rate, cache_hit_ratio, consumer_lag_seconds, quota_used_percent, disk_used_percent, restart_count, dns_resolution_failures, tls_handshake_failures all flat or zero",
+        "db_active_connections average 32 -> 45, peak 55; the pool maximum is unknown"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 13.869,
+      "cost_usd": 0.039892,
+      "input_tokens": 16580,
+      "output_tokens": 1712,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "report-builder",
+              "window_start": "2026-03-05T10:00:00Z",
+              "window_end": "2026-03-05T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2821
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-012",
+      "tier": "runbook_sufficient",
+      "service": "ledger-sync",
+      "predicted": "disk_full",
+      "truth": "disk_full",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "Writes fail while reads and the read-only health check keep working. That fits a volume that has hit capacity and returns ENOSPC on writes. disk_used_percent averaged 97.6% during the incident against a 79% baseline, and it peaked at 100%. The other candidates don't fit the metrics. Connection pool exhaustion: db_active_connections peaked at only 49, and p99 latency was flat at about 306 ms against a 313 ms baseline. A slow query: db_query_time_p99 stayed around 31 ms. Resource quota exceeded: quota_used_percent was about 61%, so no provisioned limit was consumed. Rate limiting and upstream outage: upstream 4xx and 5xx rates were negligible. Memory leak: restart_count was 0 and memory was flat. Queue lag: the queue depth and lag increases were modest, and they are more likely a consequence of the failed writes than the cause. Also ruled out: TLS (0 handshake failures), DNS (0 resolution failures), clock skew (offset at most 22 ms), and cache stampede (hit ratio steady at 0.94). I did not check the disk time series or a deploy timeline, so a bad deploy or config change that filled the disk is not excluded.",
+      "evidence_used": [
+        "disk_used_percent incident_avg 97.6, peak 100.0, vs baseline 79.1",
+        "Reads and the read-only health check work while writes fail",
+        "db_active_connections peak 49 and latency_p99 flat, so no pool exhaustion",
+        "quota_used_percent about 61%, so no resource quota exhaustion",
+        "restart_count 0, tls_handshake_failures 0, dns_resolution_failures 0, clock_offset_ms peak 22.7",
+        "upstream_5xx_rate and upstream_4xx_rate negligible",
+        "cache_hit_ratio steady at 0.94"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.98,
+      "cost_usd": 0.045763,
+      "input_tokens": 16997,
+      "output_tokens": 2105,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "ledger-sync",
+              "window_start": "2026-03-05T14:00:00Z",
+              "window_end": "2026-03-05T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2805
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-013",
+      "tier": "runbook_sufficient",
+      "service": "media-transcode",
+      "predicted": "memory_leak_oom",
+      "truth": "memory_leak_oom",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "Memory utilization peaks at 95.2% with a minimum of 45.4%, which fits a sawtooth: memory climbs to the limit, the process is killed, and memory drops back. restart_count rises to 1 during the incident, which matches the process dying. The ticket says the cycle repeats on a fixed period and that job volume is flat and did not fall with overnight traffic, so the growth is not driven by load. Other causes are ruled out by flat metrics. Disk is steady at about 54% (peak 56%), so it is not disk_full. quota_used_percent stays near 61% (peak 68%), so it is not resource_quota_exceeded. DB connections peak at 48 and DB query p99 is flat at about 30 ms, so it is neither connection_pool_exhaustion nor a slow query. Upstream 5xx and 4xx rates are flat, so it is not an upstream outage or throttling. Cache hit ratio and origin request rate are flat, so it is not a cache stampede. Queue depth and consumer lag are normal, so it is not queue_consumer_lag. TLS, DNS and clock-offset metrics are all at or near zero. Request rate is steady, so there is no sign of a deploy regression. I did not check the memory series point by point or look for a deploy or config change.",
+      "evidence_used": [
+        "memory_utilization peak 95.187 and min 45.406 (sawtooth)",
+        "restart_count peak 1 during incident",
+        "request_rate flat (baseline 858, incident 821)",
+        "disk_used_percent about 54% and quota_used_percent about 61%, both flat",
+        "db_active_connections, db_query_time_p99_ms, upstream_5xx_rate, cache_hit_ratio, consumer_lag_seconds all normal",
+        "tls_handshake_failures and dns_resolution_failures 0, clock_offset_ms low"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.296,
+      "cost_usd": 0.045282,
+      "input_tokens": 17065,
+      "output_tokens": 2055,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "media-transcode",
+              "window_start": "2026-03-06T06:00:00Z",
+              "window_end": "2026-03-06T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2812
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-014",
+      "tier": "runbook_sufficient",
+      "service": "notify-dispatch",
+      "predicted": "config_drift_feature_flag",
+      "truth": "config_drift_feature_flag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "Batching behaviour flipped sharply at 09:20 in a single interval. The ticket shows no deploy since v4.1.0 on 02-28, six days earlier, and no infrastructure change. That points to a flag or config change made without a deploy. I ruled out the other causes using the metrics. bad_deploy_regression: the last deploy was six days before the change. connection_pool_exhaustion and db_slow_query_missing_index: db connections (avg ~32) and query p99 (~30 ms) are normal. upstream_dependency_outage: upstream 5xx is ~0.09. rate_limit_throttling and resource_quota_exceeded: quota use is ~59% and has not risen. memory_leak_oom: memory is flat and restart_count is 0. disk_full: disk is ~54%. queue_consumer_lag: consumer lag is ~8 s and queue depth is not growing. cache_stampede: cache hit ratio is ~0.94 and origin request rate is flat. dns_misconfiguration, expired_tls_certificate and clock_skew_auth_failure: DNS failures and TLS handshake failures are 0, and clock offset and auth failures are negligible. The only anomaly is the error rate, which rose from 0.5 to 12.4. This looks like a behavioural step change that no resource or dependency metric explains. I did not find the config change itself in the evidence, so confidence is moderate.",
+      "evidence_used": [
+        "Ticket: batching switched from hourly digests to per-event sends at 09:20 in one interval",
+        "Ticket timeline: last deploy v4.1.0 on 2026-02-28, no deploy in six days, no infra change",
+        "Metrics: db connections, query p99, upstream 5xx, quota, memory, disk, cache hit ratio, consumer lag, DNS, TLS, clock offset and restarts all normal",
+        "Error rate rose from 0.53 baseline to 12.4 during the incident"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 21.296,
+      "cost_usd": 0.069543,
+      "input_tokens": 27877,
+      "output_tokens": 2777,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "notify-dispatch",
+              "window_start": "2026-03-06T10:00:00Z",
+              "window_end": "2026-03-06T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2816
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-014"
+            },
+            "error": null,
+            "observation_chars": 1117
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-015",
+      "tier": "runbook_sufficient",
+      "service": "payments-worker",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The provider is returning server errors. upstream_5xx_rate rose from a baseline average of 9.6 to about 38, and error rate and p99 latency rose with it. The ticket says settlement failures track the provider status page. This service looks healthy: CPU, memory, DB connections and DB query time are all at normal levels. I ruled out the other causes this way. Connection pool exhaustion and a slow query are out because db_active_connections and db_query_time_p99 stayed at baseline. A memory leak is out because restart_count is 0 and memory is flat. Disk full is out because disk is about 54%. An expired TLS certificate is out because tls_handshake_failures is 0. DNS misconfiguration is out because dns_resolution_failures is 0. Clock skew is out because clock_offset is small and auth_failure_rate is normal. Rate limiting is out because upstream_4xx_rate is about 0.2, so there are no 429s. Resource quota is out because quota_used_percent is about 61%. Cache stampede is out because cache_hit_ratio and origin_request_rate are normal. Queue consumer lag is unlikely because queue depth and lag rose only modestly and look like a side effect of the failing settlements. I did not check for a deploy or config change, but the failures follow the provider's errors, not a change on our side.",
+      "evidence_used": [
+        "upstream_5xx_rate baseline avg 9.6 vs incident avg 38.1",
+        "error_rate 0.37 -> 22.4 and p99 latency 311 -> 1472 ms",
+        "CPU, memory, db_active_connections and db_query_time_p99 at baseline",
+        "upstream_4xx_rate about 0.2, so no 429 throttling",
+        "tls_handshake_failures, dns_resolution_failures and restart_count all 0",
+        "quota_used_percent about 61%, disk about 54%, clock_offset small",
+        "ticket says errors began after the provider returned server errors"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.388,
+      "cost_usd": 0.047758,
+      "input_tokens": 16944,
+      "output_tokens": 2071,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "payments-worker",
+              "window_start": "2026-03-06T14:00:00Z",
+              "window_end": "2026-03-06T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2821
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-016",
+      "tier": "runbook_sufficient",
+      "service": "auth-gateway",
+      "predicted": "expired_tls_certificate",
+      "truth": "expired_tls_certificate",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "tls_handshake_failures went from 0 at baseline to an incident average of 808.7, which matches the request rate of 808.7. That means every request fails at the TLS handshake. Error rate jumped to about 99% within one scrape interval, which is the step change you'd expect when a certificate's notAfter date passes. I did not confirm the expiry timestamp. The get_ticket call failed with a tool-unavailable error, so I could not read the event timeline. Other causes ruled out by the metrics: DNS (dns_resolution_failures is 0), clock skew (clock_offset_ms about 15 ms and auth_failure_rate low), connection pool or slow query (db_active_connections, db_query_time_p99 and latency are normal), memory/OOM (restart_count is 0 and memory is flat), disk (about 54% used), quota and rate limit (quota about 61%, upstream_4xx low), upstream outage (upstream_5xx low), cache stampede (cache_hit_ratio and origin_request_rate normal), queue lag (queue depth and lag normal). A bad deploy or a config change could in principle also break handshakes at a single instant. But the handshake-failure signature fits certificate expiry best, and I had no deploy or config evidence.",
+      "evidence_used": [
+        "tls_handshake_failures baseline 0 -> incident avg 808.7, equal to request_rate 808.7",
+        "error_rate 0.3% -> 99.2% within one interval with no ramp",
+        "dns_resolution_failures 0",
+        "clock_offset_ms ~15ms, auth_failure_rate low",
+        "cpu, memory, db, disk, quota, queue, cache metrics all normal",
+        "restart_count 0"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.776,
+      "cost_usd": 0.042229,
+      "input_tokens": 20501,
+      "output_tokens": 1751,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "auth-gateway",
+              "window_start": "2026-03-07T06:00:00Z",
+              "window_end": "2026-03-07T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2824
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-017",
+      "tier": "runbook_sufficient",
+      "service": "search-indexer",
+      "predicted": "queue_consumer_lag",
+      "truth": "queue_consumer_lag",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "The only metrics that moved are queue_depth and consumer_lag_seconds. Queue depth averaged about 125,910 during the incident against a baseline of about 1,443, and peaked at 159,001. Consumer lag averaged about 1,772s against a baseline of about 7.7s, and peaked at 2,235s. Request rate is flat at about 821 against a baseline of about 809, which matches the ticket's statement that write volume is unchanged. Consumers are therefore not keeping up with a constant producer rate. The ticket says two of six replicas are crash-looping, which cuts consumer capacity by about a third. That fits a backlog and an age that both grow steadily.\n\nRuled out:\n- memory_leak_oom: memory utilization is flat (avg 45.4%, peak 52.7%) and restart_count is 0 in the metrics. There is no sawtooth memory growth. The metrics show no OOM-kill cycle, although the ticket does report crash-looping replicas, so this is a mild inconsistency.\n- bad_deploy_regression: the last deploy was on 2026-02-26, 9 days before the alert, so failures do not start at a deploy timestamp.\n- connection_pool_exhaustion and db_slow_query_missing_index: db_active_connections averages about 34, with no sign of a pool at its maximum. db_query_time_p99 is about 28ms, which is normal.\n- disk_full: disk usage is about 54%.\n- expired_tls_certificate: tls_handshake_failures is 0.\n- dns_misconfiguration: dns_resolution_failures is 0.\n- clock_skew_auth_failure: clock offset is small (peak about 29ms) and auth failures are at baseline.\n- rate_limit_throttling and resource_quota_exceeded: quota usage is about 58%, and 4xx rates are normal.\n- upstream_dependency_outage: upstream 5xx is near baseline (peak 0.216).\n- cache_stampede: the cache hit ratio is stable at about 0.94 and origin request rate is normal.\n- config_drift_feature_flag: the ticket timeline shows no config change.\n\nCaveat: I did not retrieve the queue_depth time series or identify why the two replicas are crash-looping. The restart_count of 0 contradicts the ticket's crash-loop report. The consumer-lag classification rests on the aggregate metrics and the elimination above.",
+      "evidence_used": [
+        "queue_depth incident_avg 125910 vs baseline 1443 (peak 159001)",
+        "consumer_lag_seconds incident_avg 1772 vs baseline 7.7 (peak 2235)",
+        "request_rate flat: 821.6 vs 808.9 baseline",
+        "ticket: two of six indexer replicas crash-looping, write volume unchanged",
+        "memory_utilization flat (avg 45.4%), restart_count 0",
+        "db_active_connections about 34 and db_query_time_p99 about 28ms, both normal",
+        "disk about 54%, tls/dns failures 0, quota about 58%, clock offset small",
+        "last deploy 2026-02-26, 9 days before the alert"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 19.917,
+      "cost_usd": 0.062437,
+      "input_tokens": 22255,
+      "output_tokens": 2493,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "search-indexer",
+              "window_start": "2026-03-07T10:00:00Z",
+              "window_end": "2026-03-07T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2821
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-017"
+            },
+            "error": null,
+            "observation_chars": 1077
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-018",
+      "tier": "runbook_sufficient",
+      "service": "inventory-cache",
+      "predicted": "cache_stampede",
+      "truth": "cache_stampede",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "The ticket describes bursts of identical concurrent requests for the same few popular keys. The bursts recur at a fixed interval and clear within about two minutes without intervention. The metrics match. origin_request_rate peaks at 683.9 against a baseline average of 102.2. cache_hit_ratio drops to a minimum of 0.219 against a baseline of 0.82. CPU spikes to 96% and db_active_connections briefly reaches 52 against a baseline of about 30. Total request_rate stays flat (peak 919 against a baseline of about 819), so this is not a traffic surge. I did not see the per-interval series, because the output was truncated. I am inferring the periodicity from the ticket description and the peak and minimum values. Ruled out: db_slow_query_missing_index, because db_query_time_p99 is normal (peak 35.6 ms). connection_pool_exhaustion, because the connection spike is brief, tied to the origin burst, and recovers on its own. bad_deploy_regression, because the pattern is periodic and self-resolving, not a one-time step change. memory_leak_oom, because restart_count is 0 and memory is stable. queue_consumer_lag, because consumer lag stays at about 9 s and queue depth does not grow. rate_limit_throttling and resource_quota_exceeded, because quota_used_percent stays at about 61% and 4xx rates are low. upstream_dependency_outage, because upstream 5xx rates are low. disk_full, expired_tls_certificate, dns_misconfiguration and clock_skew_auth_failure, because disk usage is about 54%, TLS handshake failures are 0, DNS failures are 0, and clock offset is at most 27 ms. config_drift_feature_flag, because there is no sign of a configuration change and the periodic hot-key pattern fits expiry better.",
+      "evidence_used": [
+        "origin_request_rate peak 683.9 vs baseline avg 102.2",
+        "cache_hit_ratio min 0.219 vs baseline 0.823",
+        "cpu_utilization peak 96",
+        "db_query_time_p99 normal (peak 35.6ms)",
+        "request_rate flat (peak 919 vs baseline avg 819)",
+        "restart_count 0",
+        "quota_used_percent ~61%",
+        "dns_resolution_failures 0 and tls_handshake_failures 0",
+        "consumer_lag_seconds ~9s, stable",
+        "ticket: identical concurrent requests for the same popular keys at fixed interval, self-resolving"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_metrics"
+      ],
+      "latency_s": 33.5,
+      "cost_usd": 0.079597,
+      "input_tokens": 30808,
+      "output_tokens": 3167,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "inventory-cache",
+              "window_start": "2026-03-07T14:00:00Z",
+              "window_end": "2026-03-07T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2816
+          },
+          {
+            "n": 2,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "inventory-cache",
+              "window_start": "2026-03-07T14:00:00Z",
+              "window_end": "2026-03-07T16:55:00Z",
+              "series": "origin_request_rate"
+            },
+            "error": null,
+            "observation_chars": 3535
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-019",
+      "tier": "runbook_sufficient",
+      "service": "checkout-api",
+      "predicted": "connection_pool_exhaustion",
+      "truth": "connection_pool_exhaustion",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "db_active_connections averaged 99.7 during the incident and peaked at 99.96, against a baseline of 34.9. That means the pool is pinned at a maximum of about 100. The logs show 'pool exhausted' and 'could not obtain a connection within 30s', so requests are queuing for a handle. Latency p99 rose from 313ms to 2638ms and error rate from 0.4 to 5.8. Ruled out: db_slow_query_missing_index, because db_query_time_p99 is unchanged (27.6ms baseline vs 26.9ms during the incident) and the ticket says the DB reports normal query times. bad_deploy_regression, because the last deploy was 3 days earlier (2026-03-05) and the failures don't start at that timestamp. upstream_dependency_outage and rate_limit_throttling, because upstream 5xx and 4xx rates are flat and quota_used_percent is flat at about 62%. memory_leak_oom, because restart_count is 0 and memory is flat at about 46%. cache_stampede, because cache hit ratio (0.94) and origin request rate are unchanged. queue_consumer_lag, because queue depth and consumer lag are normal. The remaining candidates are also not supported: disk is at 54%, TLS handshake failures are 0, DNS failures are 0, and clock offset is small. resource_quota_exceeded is unlikely because request rate is steady and the evidence points to the DB connection pool specifically. I did not find what caused the pool to saturate, for example a connection leak or a pool-size change. I haven't ruled out config drift, but nothing in the evidence points to it.",
+      "evidence_used": [
+        "db_active_connections incident_avg 99.68, peak 99.96 vs baseline 34.9",
+        "db_query_time_p99_ms unchanged (27.6 vs 26.9)",
+        "logs: 'pool exhausted', 'could not obtain a connection within 30s'",
+        "last deploy 2026-03-05, 3 days before the incident",
+        "upstream_5xx_rate and upstream_4xx_rate flat; quota_used_percent about 62%",
+        "restart_count 0; memory about 46%; cache_hit_ratio 0.94; queue and consumer lag normal",
+        "disk 54%, tls_handshake_failures 0, dns_resolution_failures 0, clock_offset small"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 24.637,
+      "cost_usd": 0.074523,
+      "input_tokens": 31501,
+      "output_tokens": 3136,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-08T06:00:00Z",
+              "window_end": "2026-03-08T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2813
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-019"
+            },
+            "error": null,
+            "observation_chars": 1056
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-020",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "connection_pool_exhaustion",
+      "truth": "connection_pool_exhaustion",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.85,
+      "reasoning": "db_active_connections went from a baseline average of about 32 to an incident average of 99.56, with a peak of 99.83. That is a flat ceiling at what looks like a pool maximum of 100. db_query_time_p99 did not rise (baseline 29.9ms, incident 25.4ms), so individual queries are still fast and requests are waiting for a connection. This matches the RB-003 signature and the RB-001 decision table row for pool exhaustion. I ruled out a slow query or missing index because query time is flat and connections are pinned at the maximum, not below it. I ruled out an upstream outage because upstream_5xx_rate is flat (0.13 vs 0.152). I ruled out a bad deploy because the last deploy was 2026-03-05, three days before the alert, and nothing was deployed today. I ruled out a cache stampede because cache_hit_ratio is stable at about 0.93 and origin_request_rate is only slightly higher. I ruled out a memory leak because restart_count is 0 and memory is steady. I ruled out disk full, TLS, DNS, clock skew and rate limiting because disk_used_percent, tls_handshake_failures, dns_resolution_failures, clock_offset_ms and quota_used_percent are all normal. I ruled out queue lag because queue depth and consumer lag are at or below baseline. Request rate is flat, so this is not a traffic surge. The likely trigger is a connection leak or a long-running transaction. I did not check the time series to see whether the rise was gradual or sudden.",
+      "evidence_used": [
+        "db_active_connections incident_avg 99.56, peak 99.83 vs baseline 32.2 (flat ceiling at about 100)",
+        "db_query_time_p99 25.4ms vs 29.9ms baseline (unchanged)",
+        "latency_p99 317ms -> 2449ms, error_rate 0.38 -> 5.84",
+        "upstream_5xx_rate flat at 0.13",
+        "request_rate flat (798 vs 818)",
+        "last deploy 2026-03-05, not at incident start",
+        "cache_hit_ratio stable at 0.93, restart_count 0, quota_used_percent about 60%",
+        "RB-001 and RB-003 signature for pool exhaustion"
+      ],
+      "tool_calls": 3,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket",
+        "search_runbooks"
+      ],
+      "latency_s": 32.214,
+      "cost_usd": 0.08841,
+      "input_tokens": 44593,
+      "output_tokens": 3704,
+      "num_turns": 4,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-08T10:00:00Z",
+              "window_end": "2026-03-08T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2820
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-020"
+            },
+            "error": null,
+            "observation_chars": 1114
+          },
+          {
+            "n": 3,
+            "tool": "search_runbooks",
+            "arguments": {
+              "query": "db connections at maximum pool latency timeouts",
+              "limit": 5
+            },
+            "error": null,
+            "observation_chars": 2659
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-021",
+      "tier": "evidence_required",
+      "service": "report-builder",
+      "predicted": "db_slow_query_missing_index",
+      "truth": "db_slow_query_missing_index",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "DB query p99 rose from about 30 ms at baseline to about 572 ms on average during the incident, with a peak of about 790 ms. That tracks the service p99 latency rise from about 304 ms to about 1759 ms, and error rate rose with it. Active DB connections rose only moderately, from about 35 to about 45 on average with a peak of 55. I saw no evidence of a plateau at a configured pool maximum. The connection rise is consistent with slower queries holding connections longer, so it looks like an effect rather than the cause. Ruled out: bad deploy (the last release was 2026-03-04 and nothing shipped today), upstream outage (upstream 5xx stayed at baseline, about 0.09 against 0.10), cache stampede (cache hit ratio and origin request rate unchanged), memory leak or OOM (memory flat and zero restarts), disk full (disk about 53%), rate limiting or quota (quota used about 61% and upstream 4xx flat), DNS and TLS (zero failures), clock skew (offset about 12 ms and auth failures flat), and queue lag (queue depth and consumer lag only slightly changed). CPU and request rate were also flat. I did not retrieve the per-interval time series, so I have not confirmed when the query time started rising. I also did not find the pool's configured maximum, so a pool at its limit is not fully excluded.",
+      "evidence_used": [
+        "db_query_time_p99_ms baseline 30.5 -> incident avg 572, peak 790",
+        "latency_p99_ms baseline 304 -> incident avg 1759",
+        "db_active_connections avg 44.8, peak 55, no evidence of a pool-max plateau",
+        "upstream_5xx_rate 0.092 vs baseline 0.102",
+        "last deploy 2026-03-04, none on the day of the incident",
+        "cache_hit_ratio, memory, disk, quota, DNS, TLS, clock offset, restart_count all at baseline"
+      ],
+      "tool_calls": 3,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket",
+        "get_metrics"
+      ],
+      "latency_s": 26.47,
+      "cost_usd": 0.099139,
+      "input_tokens": 42218,
+      "output_tokens": 3356,
+      "num_turns": 4,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "report-builder",
+              "window_start": "2026-03-08T14:00:00Z",
+              "window_end": "2026-03-08T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2815
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-021"
+            },
+            "error": null,
+            "observation_chars": 1093
+          },
+          {
+            "n": 3,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "report-builder",
+              "window_start": "2026-03-08T14:00:00Z",
+              "window_end": "2026-03-08T16:55:00Z",
+              "series": "db_query_time_p99_ms"
+            },
+            "error": null,
+            "observation_chars": 3535
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-022",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.75,
+      "reasoning": "Error rate rose from 0.4 to 22.3 and p99 latency rose from 294 ms to 1534 ms. The only metric that moved with them is upstream_5xx_rate, which went from 9.6 to 38.1. That points to a dependency returning server errors and slow responses while this service stays healthy. Ruled out: (1) bad_deploy_regression: the last deploy was 2026-03-04, five days before onset, and the ticket says nothing changed today. (2) rate_limit_throttling: upstream 4xx is flat at about 0.2, so there are no 429s. (3) db_slow_query_missing_index and connection_pool_exhaustion: DB query p99 is flat at about 28 ms and active connections did not rise (30.7 vs 34 baseline). (4) memory_leak_oom: memory is flat and restart_count is 0. (5) cache_stampede: cache hit ratio and origin request rate are flat. (6) dns_misconfiguration, expired_tls_certificate and clock_skew_auth_failure: DNS failures, TLS handshake failures and clock offset are all near zero, and the auth failure rate is flat. (7) disk_full and resource_quota_exceeded: disk is at about 54% and quota use is at about 59%. (8) queue_consumer_lag: queue depth and lag rose only slightly, well within normal variation. (9) config_drift_feature_flag: no evidence of a config change. I did not check the timing of the upstream 5xx onset against the error and latency onset, so confidence is not higher.",
+      "evidence_used": [
+        "upstream_5xx_rate 9.6 -> 38.1 (peak 38.2)",
+        "error_rate 0.417 -> 22.338",
+        "latency_p99_ms 294 -> 1534",
+        "db_query_time_p99_ms flat (28.6 -> 27.6)",
+        "db_active_connections not elevated",
+        "upstream_4xx_rate flat (~0.2)",
+        "cpu and memory flat, restart_count 0",
+        "dns_resolution_failures 0, tls_handshake_failures 0, clock_offset_ms ~12",
+        "cache_hit_ratio flat (0.94 -> 0.935)",
+        "last deploy 2026-03-04, 5 days before onset"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 21.863,
+      "cost_usd": 0.070013,
+      "input_tokens": 27792,
+      "output_tokens": 2857,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "auth-gateway",
+              "window_start": "2026-03-09T06:00:00Z",
+              "window_end": "2026-03-09T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2818
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-022"
+            },
+            "error": null,
+            "observation_chars": 1085
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-023",
+      "tier": "evidence_required",
+      "service": "ledger-sync",
+      "predicted": "connection_pool_exhaustion",
+      "truth": "connection_pool_exhaustion",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.82,
+      "reasoning": "db_active_connections averaged 99.7 during the incident and peaked at 99.995, against a baseline of 38. That is a pool pinned at a max of about 100. p99 latency rose from 309 ms to 2600 ms and error rate from 0.5 to 6, consistent with requests queueing for a connection. db_query_time_p99 stayed normal (25.7 ms baseline vs 29.4 ms incident), so queries are not slow; the wait is for a connection. That rules out db_slow_query_missing_index. Request rate was flat (841 baseline vs 826 incident), so this is not a load surge. Queue depth and consumer lag were only modestly up, which rules out queue_consumer_lag. Upstream 5xx and 4xx rates were near baseline, which rules out upstream_dependency_outage and rate_limit_throttling. Cache hit ratio and origin request rate were unchanged, which rules out cache_stampede. restart_count was 0 and memory was stable at 44-47%, which rules out memory_leak_oom. Disk was about 54%, TLS handshake failures were 0, DNS failures were 0, and clock offset and auth failures were normal. That rules out disk_full, expired_tls_certificate, dns_misconfiguration and clock_skew_auth_failure. quota_used_percent was about 60%, so resource_quota_exceeded is unlikely. The ticket reports no deploy or config change, so bad_deploy_regression and config_drift_feature_flag have no support. I did not check the timeline or the shape of the connection series, so a connection leak as the underlying trigger is unconfirmed.",
+      "evidence_used": [
+        "db_active_connections incident_avg 99.7, peak 99.995 vs baseline 38.2",
+        "db_query_time_p99_ms 29.4 vs baseline 25.7 (normal)",
+        "latency_p99_ms 2600 vs 309 baseline",
+        "request_rate flat (826 vs 841)",
+        "upstream_5xx_rate and upstream_4xx_rate near baseline",
+        "restart_count 0, memory 47%, disk 54%, quota_used_percent about 60%",
+        "tls_handshake_failures 0, dns_resolution_failures 0, clock_offset_ms normal",
+        "cache_hit_ratio 0.943 unchanged"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 20.312,
+      "cost_usd": 0.053009,
+      "input_tokens": 21064,
+      "output_tokens": 2612,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "ledger-sync",
+              "window_start": "2026-03-09T10:00:00Z",
+              "window_end": "2026-03-09T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2815
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-024",
+      "tier": "evidence_required",
+      "service": "search-indexer",
+      "predicted": "db_slow_query_missing_index",
+      "truth": "db_slow_query_missing_index",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "DB query p99 rose from about 29ms to about 575ms (peak 697ms), roughly 20x. Service p99 rose from about 300ms to about 1754ms, and error rate rose modestly. The DB is the slow component. The ticket says nothing was shipped this week, and the last deploy was on 03-02, a week before the alert, so a deploy regression does not fit. Ruled out: connection_pool_exhaustion. Active connections only rose modestly (avg 34 to 41, peak 55). Pool exhaustion would show connections pinned at a maximum and queueing, and DB query execution time would not itself rise. I did not check the configured pool maximum, so this rests on the query-time evidence. upstream_dependency_outage: upstream 5xx and 4xx rates are flat or lower. cache_stampede: cache hit ratio (0.939) and origin request rate are unchanged. memory_leak_oom: restart count is 0 and memory is stable at about 47%. queue_consumer_lag: queue depth and lag rose only slightly, which fits a downstream effect of slow queries. disk_full, expired_tls_certificate, dns_misconfiguration, clock_skew_auth_failure, rate_limit_throttling and resource_quota_exceeded: disk is about 54%, TLS and DNS failures are 0, clock offset and auth failures are flat, and quota use is about 60% and not rising. config_drift_feature_flag: the ticket and timeline show no config change. I did not look for a flag change beyond that.",
+      "evidence_used": [
+        "db_query_time_p99_ms baseline 29.5 -> incident 575 (peak 697)",
+        "latency_p99_ms baseline 300 -> incident 1754",
+        "db_active_connections avg 33.6 -> 41.1, peak 55, no plateau shown",
+        "last deploy 2026-03-02, a week before the alert",
+        "cache_hit_ratio, origin_request_rate, upstream_5xx_rate flat",
+        "restart_count 0, memory about 47%, disk about 54%",
+        "tls_handshake_failures 0, dns_resolution_failures 0, quota_used_percent about 60%"
+      ],
+      "tool_calls": 3,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket",
+        "get_metrics"
+      ],
+      "latency_s": 28.549,
+      "cost_usd": 0.100289,
+      "input_tokens": 37438,
+      "output_tokens": 3569,
+      "num_turns": 4,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "search-indexer",
+              "window_start": "2026-03-09T14:00:00Z",
+              "window_end": "2026-03-09T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2816
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-024"
+            },
+            "error": null,
+            "observation_chars": 1055
+          },
+          {
+            "n": 3,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "search-indexer",
+              "window_start": "2026-03-09T14:00:00Z",
+              "window_end": "2026-03-09T16:55:00Z",
+              "series": "db_query_time_p99_ms,db_active_connections,latency_p99_ms"
+            },
+            "error": null,
+            "observation_chars": 3535
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-025",
+      "tier": "evidence_required",
+      "service": "checkout-api",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "The only metrics that moved with the incident are upstream_5xx_rate (about 0 to 38%, peak 38.2) and the resulting error_rate (0.3% to 22%) and p99 latency (320ms to 1497ms). The service itself looks healthy: CPU is flat at about 37%, memory is normal at 45%, and restart_count is 0. Ruled out: bad_deploy_regression, because the last deploy was 2026-03-02, eight days before the alert on 03-10, so failures do not start at a deploy timestamp. connection_pool_exhaustion and db_slow_query_missing_index, because db connections (about 31, down from 35) and db query p99 (about 28ms) are normal. memory_leak_oom, because there are no restarts and memory is flat. cache_stampede, because the cache hit ratio is unchanged at 0.94 and origin request rate is flat. rate_limit_throttling, because upstream 4xx is about 0.2% and there are no 429s. queue_consumer_lag, because queue depth and lag are within normal range. disk_full and resource_quota_exceeded, because disk is about 54% and quota is about 61%. expired_tls_certificate, because TLS handshake failures are 0. dns_misconfiguration, because DNS failures are 0. clock_skew_auth_failure, because clock offset is about 10ms and auth failures are about 0.3%. config_drift_feature_flag has no supporting evidence, since the ticket timeline shows no config change. Caveat: I did not look at the per-interval series to confirm the 5xx onset lines up with the 07:56 alert. That is why confidence is not higher.",
+      "evidence_used": [
+        "upstream_5xx_rate incident_avg 38.075 vs baseline 9.534, peak 38.246",
+        "error_rate incident_avg 22.4 vs baseline 0.3",
+        "latency_p99_ms incident_avg 1497 vs 320",
+        "cpu 36.6%, memory 45.5%, restart_count 0",
+        "db_active_connections 30.7, db_query_time_p99 28ms",
+        "cache_hit_ratio 0.941 unchanged, origin_request_rate flat",
+        "upstream_4xx_rate 0.165, no 429 signal",
+        "tls_handshake_failures 0, dns_resolution_failures 0, clock_offset about 10ms",
+        "disk 54%, quota 61%",
+        "last deploy 2026-03-02, 8 days before the alert on 2026-03-10"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 22.448,
+      "cost_usd": 0.071549,
+      "input_tokens": 27804,
+      "output_tokens": 2989,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "checkout-api",
+              "window_start": "2026-03-10T06:00:00Z",
+              "window_end": "2026-03-10T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2815
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-025"
+            },
+            "error": null,
+            "observation_chars": 1043
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-026",
+      "tier": "evidence_required",
+      "service": "notify-dispatch",
+      "predicted": "rate_limit_throttling",
+      "truth": "rate_limit_throttling",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "The provider is rejecting sends with 4xx responses, which the runbook ties to 429 throttling. upstream_4xx_rate went from 0.19 to 31.1, and upstream_5xx_rate stayed flat at about 0.1. error_rate rose from 0.41 to 14.4. Our own request_rate rose about 44%, from 895 to 1292 (peak 1352). That matches the runbook pattern of throttling that starts when our request rate crosses the quota. Ruled out: (1) upstream_dependency_outage, because it would show 5xx errors, and 5xx did not rise. (2) resource_quota_exceeded, because quota_used_percent averages about 60% (peak 65%), not 100%. (3) bad_deploy_regression, because the last deploy was on 03-01, nine days before the failures began. (4) Our own resources, because latency, CPU, memory, DB connections and query time, queue depth and consumer lag, disk, restarts, TLS, DNS, auth failures and clock offset are all normal. (5) config_drift_feature_flag, because the timeline shows no config change. I did not fetch the per-interval series, so the correlation with request rate rests on the summary averages. Recommendation: reduce send rate, add jitter and honour Retry-After. Failing over to the secondary provider is a reasonable mitigation if the rate cannot be reduced quickly.",
+      "evidence_used": [
+        "upstream_4xx_rate baseline 0.187 -> incident avg 31.121 (peak 31.268)",
+        "upstream_5xx_rate flat: baseline 0.14, incident avg 0.1",
+        "request_rate baseline 894.6 -> incident avg 1291.8 (peak 1352)",
+        "quota_used_percent avg ~60.6%, peak 64.6% (not 100%)",
+        "error_rate 0.41 -> 14.38",
+        "latency, CPU, memory, DB, disk, DNS, TLS, restart and clock metrics normal",
+        "last deploy 2026-03-01, nine days before the incident",
+        "RB-006#2 runbook: 429s show in upstream_4xx_rate while 5xx stays flat, and throttling correlates with own request rate"
+      ],
+      "tool_calls": 4,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket",
+        "get_metrics",
+        "search_runbooks"
+      ],
+      "latency_s": 40.404,
+      "cost_usd": 0.143541,
+      "input_tokens": 62672,
+      "output_tokens": 4666,
+      "num_turns": 5,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "notify-dispatch",
+              "window_start": "2026-03-10T10:00:00Z",
+              "window_end": "2026-03-10T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2822
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-026"
+            },
+            "error": null,
+            "observation_chars": 1082
+          },
+          {
+            "n": 3,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "notify-dispatch",
+              "window_start": "2026-03-10T10:00:00Z",
+              "window_end": "2026-03-10T12:55:00Z",
+              "series": "upstream_4xx_rate"
+            },
+            "error": null,
+            "observation_chars": 3535
+          },
+          {
+            "n": 4,
+            "tool": "search_runbooks",
+            "arguments": {
+              "query": "upstream 4xx 429 provider rejecting sends",
+              "limit": 5
+            },
+            "error": null,
+            "observation_chars": 2057
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-027",
+      "tier": "evidence_required",
+      "service": "payments-worker",
+      "predicted": "upstream_dependency_outage",
+      "truth": "upstream_dependency_outage",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.8,
+      "reasoning": "upstream_5xx_rate rose from a baseline of 9.6 to 38.1 (peak 38.2). Error rate rose from 0.4 to 22.4 and p99 latency from 311 ms to 1597 ms. This matches a processor that is returning server errors while payments-worker itself stays healthy. CPU (~37%), memory (~46%), restarts (0) and disk (~54%) are all normal. The missing public statement and the unreachable account manager are only a lack of confirmation, and the metrics still show the processor failing. Ruled out: (1) Rate limiting: upstream_4xx_rate is flat at 0.2, so there are no 429s, and quota_used_percent is steady at about 58% and not exhausted. (2) Bad deploy: the last deploy was 2026-03-08, about two days before the failures began, so the failures don't start at a deploy. (3) Connection pool exhaustion and slow queries: db_query_time_p99 is unchanged at about 29 ms, and db connections peak at 42, which is modest. (4) Memory leak: restart_count is 0 and memory is flat. (5) Queue lag and cache stampede: consumer lag is about 7 s, queue depth is near baseline, the cache hit ratio is 0.95 and origin request rate is flat. (6) TLS: handshake failures are 0. (7) DNS: resolution failures are 0. (8) Clock skew: clock offset is about 12 ms and auth_failure_rate is flat at 0.29. (9) Disk full: usage is about 54%. (10) Config drift: the timeline shows no config or flag change.",
+      "evidence_used": [
+        "upstream_5xx_rate baseline 9.6 -> incident 38.1",
+        "error_rate 0.4 -> 22.4",
+        "latency_p99 311ms -> 1597ms",
+        "upstream_4xx_rate flat at 0.2",
+        "quota_used_percent ~58%, flat",
+        "last deploy 2026-03-08, two days before the alert at 2026-03-10T15:56Z",
+        "db_query_time_p99 ~29ms unchanged",
+        "restart_count 0, cpu and memory normal",
+        "tls_handshake_failures 0, dns_resolution_failures 0",
+        "clock_offset ~12ms",
+        "consumer_lag ~7s",
+        "disk ~54%"
+      ],
+      "tool_calls": 2,
+      "tool_call_names": [
+        "get_metrics",
+        "get_ticket"
+      ],
+      "latency_s": 21.385,
+      "cost_usd": 0.069871,
+      "input_tokens": 27770,
+      "output_tokens": 2856,
+      "num_turns": 3,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "payments-worker",
+              "window_start": "2026-03-10T14:00:00Z",
+              "window_end": "2026-03-10T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2818
+          },
+          {
+            "n": 2,
+            "tool": "get_ticket",
+            "arguments": {
+              "incident_id": "INC-027"
+            },
+            "error": null,
+            "observation_chars": 1095
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-028",
+      "tier": "evidence_required",
+      "service": "session-store",
+      "predicted": "clock_skew_auth_failure",
+      "truth": "clock_skew_auth_failure",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.93,
+      "reasoning": "The metrics isolate clock skew. clock_offset_ms jumped from a baseline average of about 12 ms to 41,012 ms (about 41 s), far beyond a typical allowed skew. auth_failure_rate rose from 0.285 to 34.4 over the same period. That fits valid signed tokens being rejected by a verifier whose clock has drifted, and it matches the intermittent logouts while the IdP reports no problems. I ruled out the other causes. Request rate, latency, CPU and memory are normal and there are no restarts, so this is not a memory leak or OOM. TLS handshake failures are 0, so it is not an expired certificate. DNS failures are 0. Upstream 5xx and 4xx rates are flat, so it is not an upstream outage or rate limiting. DB connections and query time are normal, so it is not pool exhaustion or a slow query. Cache hit ratio and origin request rate are unchanged, so it is not a cache stampede. Disk use is about 54% and quota use is about 60%, so it is neither disk_full nor quota exhaustion. Queue depth is slightly elevated but consumer lag is normal. I did not check the deploy or config-change timeline. The clock offset is a direct match for the auth failures, so a deploy or flag change is unlikely to be the cause.",
+      "evidence_used": [
+        "clock_offset_ms incident_avg 41012 vs baseline 12.3",
+        "auth_failure_rate 34.4 vs baseline 0.285",
+        "tls_handshake_failures 0",
+        "dns_resolution_failures 0",
+        "upstream_5xx_rate and upstream_4xx_rate flat",
+        "db_active_connections and db_query_time_p99_ms normal",
+        "restart_count 0 and memory_utilization normal",
+        "cache_hit_ratio unchanged at about 0.94",
+        "disk_used_percent about 54%",
+        "quota_used_percent about 60%"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.105,
+      "cost_usd": 0.04715,
+      "input_tokens": 16910,
+      "output_tokens": 2020,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "session-store",
+              "window_start": "2026-03-11T06:00:00Z",
+              "window_end": "2026-03-11T08:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2817
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-029",
+      "tier": "evidence_required",
+      "service": "auth-gateway",
+      "predicted": "dns_misconfiguration",
+      "truth": "dns_misconfiguration",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.88,
+      "reasoning": "The metrics separate the three candidates the team named. dns_resolution_failures jump from a baseline of 0 to an incident average of about 679 per interval (peak 719). That matches the error_rate and auth_failure_rate jumps (about 61% and 48%). Certificate problem ruled out: tls_handshake_failures is 0 throughout. Clock skew ruled out: clock_offset_ms averages about 15 ms (peak 25 ms), far too small to reject tokens. Identity provider outage ruled out: upstream_5xx_rate stays near baseline (0.08 average), so the dependency is not returning server errors. Names fail to resolve, so connections are never established. Other causes ruled out: latency, CPU, memory and restart_count are flat, so no leak or OOM. DB connections and query time are normal, so neither pool exhaustion nor a slow query. Disk is stable at about 54%. Quota use is about 62% with no 429 signal. Cache hit ratio is stable, so no stampede. Queue depth and lag are normal. I did not check the ticket timeline or deploy and config history, so I can't rule out a config change as the trigger. The DNS failure signal is still the specific evidence in the data.",
+      "evidence_used": [
+        "dns_resolution_failures baseline 0.0, incident avg 679.4, peak 719.5",
+        "tls_handshake_failures 0 throughout",
+        "clock_offset_ms peak 25 ms, avg 14.6 ms",
+        "upstream_5xx_rate incident avg 0.08, near baseline",
+        "auth_failure_rate 0.29 -> 48.3 and error_rate 0.33 -> 61.4",
+        "db_active_connections, db_query_time_p99_ms, memory_utilization, restart_count, disk_used_percent, quota_used_percent and cache_hit_ratio all normal"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 15.888,
+      "cost_usd": 0.047275,
+      "input_tokens": 16891,
+      "output_tokens": 2032,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "auth-gateway",
+              "window_start": "2026-03-11T10:00:00Z",
+              "window_end": "2026-03-11T12:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2822
+          }
+        ]
+      }
+    },
+    {
+      "arm": "agent",
+      "incident_id": "INC-030",
+      "tier": "evidence_required",
+      "service": "inventory-cache",
+      "predicted": "resource_quota_exceeded",
+      "truth": "resource_quota_exceeded",
+      "correct": true,
+      "abstained": false,
+      "confidence": 0.72,
+      "reasoning": "quota_used_percent rose from a baseline average of about 60% to 100% (peak 100, incident average 100) and stayed there. Reducing our write rate did not help, so the limit is fully consumed and does not recover when load drops. That matches resource_quota_exceeded. The alternative is rate_limit_throttling, which would show upstream 429s from crossing a published rate quota. upstream_4xx_rate is flat (0.19 vs 0.23 baseline), so there is no 429 signature, and a rate limit would be expected to ease once we cut the write rate. Other causes ruled out: disk_used_percent is about 54% (not disk_full), and restart_count is 0 with flat memory (not a memory leak). Further ruled out: db_query_time_p99 and db connections are normal (not a slow query or pool exhaustion), DNS and TLS failures are 0, clock offset is normal, and there were no deploys. Queue depth and consumer lag are normal (no queue lag), cache hit ratio is steady at about 0.93 with origin request rate flat (no stampede), and upstream_5xx is flat (no upstream outage). I could not call the other tools here, so I did not check the quota series over time or the runbooks. This conclusion rests on the summary metrics only.",
+      "evidence_used": [
+        "quota_used_percent incident_avg 100, baseline 59.95",
+        "write rate reduction did not help",
+        "upstream_4xx_rate flat 0.192 vs 0.234",
+        "disk_used_percent ~54%",
+        "restart_count 0",
+        "db_query_time_p99 normal",
+        "dns_resolution_failures 0",
+        "tls_handshake_failures 0",
+        "no deploys today"
+      ],
+      "tool_calls": 1,
+      "tool_call_names": [
+        "get_metrics"
+      ],
+      "latency_s": 14.069,
+      "cost_usd": 0.038265,
+      "input_tokens": 16462,
+      "output_tokens": 1577,
+      "num_turns": 2,
+      "error": null,
+      "detail": {
+        "steps": [
+          {
+            "n": 1,
+            "tool": "get_metrics",
+            "arguments": {
+              "service": "inventory-cache",
+              "window_start": "2026-03-11T14:00:00Z",
+              "window_end": "2026-03-11T16:55:00Z"
+            },
+            "error": null,
+            "observation_chars": 2817
+          }
+        ]
+      }
+    }
+  ]
+}

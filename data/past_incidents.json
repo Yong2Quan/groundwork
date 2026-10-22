@@ -1,0 +1,86 @@
+[
+  {
+    "id": "PAST-01",
+    "service": "checkout-api",
+    "root_cause_id": "connection_pool_exhaustion",
+    "summary": "Checkout p99 latency degraded to several seconds with timeout errors",
+    "resolution": "Pool was sized at 60 against measured concurrency of 95. Raised to 150."
+  },
+  {
+    "id": "PAST-02",
+    "service": "checkout-api",
+    "root_cause_id": "db_slow_query_missing_index",
+    "summary": "Checkout latency climbing through the afternoon, callers timing out",
+    "resolution": "A reporting join lost its index during a schema migration. Index rebuilt."
+  },
+  {
+    "id": "PAST-03",
+    "service": "auth-gateway",
+    "root_cause_id": "upstream_dependency_outage",
+    "summary": "Gateway slow and erroring, no change on our side",
+    "resolution": "Token provider had a regional outage. We failed open after 20 minutes."
+  },
+  {
+    "id": "PAST-04",
+    "service": "ledger-sync",
+    "root_cause_id": "connection_pool_exhaustion",
+    "summary": "Sync operations intermittently slow and timing out",
+    "resolution": "A batch reconciliation job held connections open for the whole run."
+  },
+  {
+    "id": "PAST-05",
+    "service": "report-builder",
+    "root_cause_id": "db_slow_query_missing_index",
+    "summary": "Report endpoints slow, no deploy, error rate slightly up",
+    "resolution": "Row growth pushed a sequential scan past the statement timeout."
+  },
+  {
+    "id": "PAST-06",
+    "service": "notify-dispatch",
+    "root_cause_id": "rate_limit_throttling",
+    "summary": "Large share of sends failing at the delivery provider",
+    "resolution": "We crossed the documented per-minute quota after a concurrency change."
+  },
+  {
+    "id": "PAST-07",
+    "service": "notify-dispatch",
+    "root_cause_id": "upstream_dependency_outage",
+    "summary": "Delivery failures at the provider with no status page update",
+    "resolution": "Provider was in a partial outage they acknowledged four hours later."
+  },
+  {
+    "id": "PAST-08",
+    "service": "session-store",
+    "root_cause_id": "clock_skew_auth_failure",
+    "summary": "Intermittent authentication failures, users logged out unexpectedly",
+    "resolution": "Time sync daemon had died on three of eleven hosts; offset reached 41s."
+  },
+  {
+    "id": "PAST-09",
+    "service": "auth-gateway",
+    "root_cause_id": "dns_misconfiguration",
+    "summary": "Authentication failing broadly, unclear whether network or provider",
+    "resolution": "A DNS record was edited during a migration and cached negatively."
+  },
+  {
+    "id": "PAST-10",
+    "service": "inventory-cache",
+    "root_cause_id": "resource_quota_exceeded",
+    "summary": "Storage provider rejecting a large share of writes",
+    "resolution": "Provisioned capacity units were fully consumed; quota raised."
+  },
+  {
+    "id": "PAST-11",
+    "service": "search-indexer",
+    "root_cause_id": "memory_leak_oom",
+    "summary": "Indexer throughput down and latency up over several hours",
+    "resolution": "A caching layer added in the previous release retained every document."
+  },
+  {
+    "id": "PAST-12",
+    "service": "payments-worker",
+    "root_cause_id": "upstream_dependency_outage",
+    "summary": "Authorisation calls failing in volume at the processor",
+    "resolution": "Processor incident; our retry storm extended it. We added a circuit breaker."
+  }
+]

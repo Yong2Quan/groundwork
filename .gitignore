@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+
+# Sweep results are committed on purpose: they are the evidence behind the
+# results table, and a reader should be able to re-render it with
+# `triage report` without re-running the sweep. Logs are not.
+results/runs/*.log

@@ -1,0 +1,16 @@
+{
+  "connection_pool_exhaustion": "Requests queue waiting for a database connection; the pool is at its configured maximum.",
+  "db_slow_query_missing_index": "A query degraded, typically from a missing or unused index, raising query execution time.",
+  "upstream_dependency_outage": "A dependency this service calls started failing with server errors; this service is healthy.",
+  "rate_limit_throttling": "An upstream is rejecting requests with 429 because this service crossed a published quota.",
+  "expired_tls_certificate": "TLS handshakes fail because the leaf certificate passed its notAfter date.",
+  "memory_leak_oom": "Memory grows without bound until the orchestrator kills the process; the cycle repeats.",
+  "disk_full": "A volume reached capacity and writes fail with ENOSPC.",
+  "bad_deploy_regression": "A release introduced a defect; failures start at the deploy timestamp.",
+  "config_drift_feature_flag": "A feature flag or configuration value changed behaviour without a deploy.",
+  "cache_stampede": "A hot key expired and concurrent misses stampeded the origin simultaneously.",
+  "queue_consumer_lag": "Consumers cannot keep up with producers; the backlog and its age both grow.",
+  "clock_skew_auth_failure": "A verifier clock drifted beyond the allowed skew, so valid signed tokens are rejected.",
+  "dns_misconfiguration": "Name resolution for a dependency fails, so connections never get established.",
+  "resource_quota_exceeded": "A provisioned resource limit is fully consumed and does not recover when load drops."
+}

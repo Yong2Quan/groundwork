@@ -3,7 +3,7 @@
 Selected with `--provider anthropic`. Needs credentials:
 
     ANTHROPIC_API_KEY=...                      # first-party API
-    TRIAGE_BEDROCK_REGION=us-east-1            # or Amazon Bedrock
+    TRIAGE_BEDROCK_REGION=ap-southeast-1       # or Amazon Bedrock
 
 Pricing below is first-party list price, used to compute cost per incident
 from reported token usage. Bedrock bills at AWS rates, so the cost column is

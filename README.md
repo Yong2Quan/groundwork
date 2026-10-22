@@ -557,10 +557,8 @@ brief did not ask for. It answers a question the other three cannot: how much
 of the headline accuracy is the language model actually contributing, versus
 how obvious the easy incidents are.
 
-**Claude via the Claude Code CLI, not Bedrock.** The brief said "Bedrock or
-anything free and available". There are no AWS credentials and no API budget
-here; the Claude Code CLI runs on an existing subscription at no additional
-cost. The Bedrock and direct-API paths are implemented behind
+**Claude via the Claude Code CLI** The Claude Code CLI runs on an existing subscription at no additional
+cost. There is Bedrock and direct-API paths are implemented behind
 `--provider anthropic` but untested.
 
 ---

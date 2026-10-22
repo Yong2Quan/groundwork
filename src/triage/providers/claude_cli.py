@@ -5,7 +5,7 @@ subscription already installed on the machine. That makes the whole eval
 runnable at no additional cost, which is the difference between a results
 table and a promise of one.
 
-Two things to be honest about, both reported rather than hidden:
+Two things:
 
 1. `total_cost_usd` is Claude Code's own estimate at *list API prices*. On a
    subscription you are not billed that amount. It is the right number for
@@ -42,9 +42,6 @@ def _claude_binary() -> str:
     found = shutil.which("claude")
     if not found:
         raise ProviderError(
-            "The `claude` CLI is not on PATH. Install Claude Code, or run the "
-            "eval with --provider anthropic (needs ANTHROPIC_API_KEY) or "
-            "--provider offline."
         )
     return found
 

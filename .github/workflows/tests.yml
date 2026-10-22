@@ -9,19 +9,30 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.13"]
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
+      # setup-python rather than uv: uv is the documented local workflow,
+      # but `uv pip install --system` targets /usr, which is PEP 668
+      # externally-managed on ubuntu-latest and refuses to install. The
+      # interpreter setup-python provides is not externally managed.
       - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install
-        run: uv pip install --system -e ".[mcp,dev]"
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[mcp,dev]"
+
+      - name: Versions
+        run: |
+          python --version
+          python -c "import mcp, pydantic, importlib.metadata as m; print('mcp', m.version('mcp')); print('pydantic', m.version('pydantic'))"
 
       # The corpus is committed, but it is also generated. Regenerating and
       # diffing proves the generator is deterministic and that the data in
@@ -43,7 +54,8 @@ jobs:
       - name: Rules-only control sweep
         run: python -m triage.cli run --provider offline --arms baseline --out /tmp/ci-control.json
 
-      - name: Report renders
+      - name: Reports render
         run: |
           python -m triage.cli report results/runs/sweep-sonnet.json
           python -m triage.cli economics results/runs/sweep-sonnet.json
+          python -m triage.cli compare results/runs/sweep-sonnet.json results/runs/sweep-haiku.json
